@@ -119,18 +119,20 @@ const EMERGENCY_KEYWORDS = [
 
 export default function App() {
   // Navigation & session state
+  // Splash screen runs first for 3 seconds -> then directs to 'auth'
   const [screen, setScreen] = useState('splash'); // 'splash' | 'auth' | 'onboarding' | 'allSet' | 'main'
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
   const [activeTab, setActiveTab] = useState('home'); // 'home' | 'track' | 'appointments' | 'insights' | 'chat'
   
-  // Persistent login flags: tracks if user has finished questions once
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true);
+  // Login & Onboarding flags:
+  // Starts logged OUT so the user sees the Splash (3s) -> Auth screen -> Questionnaire flow.
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   
-  // Explicit dark mode toggle
+  // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // User Profile State with name & email
+  // User Profile State with dynamic name & email from auth and onboarding Step 1
   const [userProfile, setUserProfile] = useState({
     name: 'Rohit Sharma',
     email: 'rohit.sharma@example.com',
@@ -192,7 +194,7 @@ export default function App() {
     {
       id: 'c1',
       sender: 'assistant',
-      text: "Hello Rohit! I'm your GlucoGuide companion. How are you feeling today? You can ask me about meal ideas, glucose readings, or questions to prepare for Dr. Mahmood.",
+      text: "Hello! I'm your GlucoGuide companion. How are you feeling today? You can ask me about meal ideas, glucose readings, or questions to prepare for your doctor.",
       sources: ['ADA 2026 Standards of Care', 'NIDDK Guidelines']
     }
   ]);
@@ -202,8 +204,8 @@ export default function App() {
   useEffect(() => {
     if (screen === 'splash') {
       const timer = setTimeout(() => {
-        // If already logged in, go straight to main. Otherwise to auth
-        if (isLoggedIn) {
+        // If already authenticated and onboarded, jump to main; otherwise go to auth screen
+        if (isLoggedIn && hasCompletedOnboarding) {
           setScreen('main');
         } else {
           setScreen('auth');
@@ -211,7 +213,7 @@ export default function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [screen, isLoggedIn]);
+  }, [screen, isLoggedIn, hasCompletedOnboarding]);
 
   // Derived metrics
   const completedTasks = dailyTasks.filter(t => t.completed).length;
@@ -336,7 +338,7 @@ Strict Rules:
         {
           id: 'asst_fb_' + Date.now(),
           sender: 'assistant',
-          text: "Blood glucose can fluctuate due to sleep patterns, meal composition, and physical activity. Consistent routines like light post-meal walks help stabilize values. Always discuss your personal logs with Dr. Mahmood.",
+          text: "Blood glucose can fluctuate due to sleep patterns, meal composition, and physical activity. Consistent routines like light post-meal walks help stabilize values. Always discuss your personal logs with your healthcare professional.",
           sources: ['ADA Clinical Education']
         }
       ]);
@@ -351,7 +353,7 @@ Strict Rules:
         <div className="w-full flex justify-end">
           <button
             type="button"
-            onClick={() => setScreen(isLoggedIn ? 'main' : 'auth')}
+            onClick={() => setScreen(isLoggedIn && hasCompletedOnboarding ? 'main' : 'auth')}
             className="text-xs text-blue-200/90 hover:text-white bg-white/15 px-3.5 py-1.5 rounded-full backdrop-blur-sm transition font-medium"
           >
             Skip ➔
@@ -408,21 +410,24 @@ Strict Rules:
       <AuthScreen
         mode={authMode}
         setMode={setAuthMode}
+        currentEmail={userProfile.email}
         hasCompletedOnboarding={hasCompletedOnboarding}
         onLoginSuccess={(isNewUser, userDetails) => {
+          // Immediately update profile with whatever email and name the user typed!
           if (userDetails) {
             setUserProfile(prev => ({
               ...prev,
-              name: userDetails.name || prev.name,
-              email: userDetails.email || prev.email
+              ...(userDetails.email ? { email: userDetails.email } : {}),
+              ...(userDetails.name ? { name: userDetails.name } : {})
             }));
           }
           setIsLoggedIn(true);
-          // If first time user (signing up for first time or hasn't finished onboarding)
-          if (isNewUser || !hasCompletedOnboarding) {
+
+          // If the user hasn't finished the onboarding questionnaire yet, send them to onboarding!
+          if (!hasCompletedOnboarding || isNewUser) {
             setScreen('onboarding');
           } else {
-            // Returning user who logged out before: DO NOT ask questions again!
+            // If they already completed onboarding once, NEVER ask the questions again!
             setScreen('main');
           }
         }}
@@ -452,7 +457,7 @@ Strict Rules:
     );
   }
 
-  // High contrast theme tokens to avoid CSS dark mode collisions
+  // Theme styling tokens
   const pageBgClass = isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#F4F7FC] text-slate-900';
   const containerBgClass = isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-[#F8FAFC] border-slate-200';
 
@@ -739,9 +744,9 @@ function NavButton({ icon, label, isActive, onClick, isDarkMode }) {
   );
 }
 
-function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
-  const [name, setName] = useState('Rohit Sharma');
-  const [email, setEmail] = useState('rohit.sharma@example.com');
+function AuthScreen({ mode, setMode, currentEmail, hasCompletedOnboarding, onLoginSuccess }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(currentEmail || 'rohit.sharma@example.com');
   const [password, setPassword] = useState('••••••••••••');
   const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
@@ -749,7 +754,8 @@ function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLoginSuccess(mode === 'signup', { name, email });
+    // Pass entered email and optional name to update the profile immediately
+    onLoginSuccess(mode === 'signup', { name: name.trim() || undefined, email: email.trim() });
   };
 
   return (
@@ -803,11 +809,11 @@ function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
           </button>
         </div>
 
-        {/* Auth Form with Full Name and Email */}
+        {/* Auth Form with Email and Password */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
           {mode === 'signup' && (
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Full Name</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">Full Name (Optional)</label>
               <div className="relative">
                 <input
                   type="text"
@@ -815,7 +821,6 @@ function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Rohit Sharma"
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
-                  required
                 />
                 <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               </div>
@@ -926,7 +931,7 @@ function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
 
           <button
             type="button"
-            onClick={() => onLoginSuccess(false, { name: 'Rohit Sharma', email: 'rohit.sharma@example.com' })}
+            onClick={() => onLoginSuccess(false, { name: name || 'Rohit Sharma', email: email || 'rohit.sharma@example.com' })}
             className="py-2.5 px-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs font-bold text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-1.5 transition"
           >
             <Zap className="w-3.5 h-3.5 text-blue-600" />
@@ -951,6 +956,7 @@ function AuthScreen({ mode, setMode, hasCompletedOnboarding, onLoginSuccess }) {
 
 function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
   const [step, setStep] = useState(1);
+  const totalSteps = 6;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between max-w-md mx-auto p-6 font-sans">
@@ -963,7 +969,7 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
           <span className="font-extrabold text-sm text-slate-900 tracking-tight">GlucoGuide Setup</span>
         </div>
         <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-          Step {step} of 5
+          Step {step} of {totalSteps}
         </span>
       </div>
 
@@ -971,13 +977,52 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
       <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden my-4">
         <div
           className="bg-blue-600 h-full rounded-full transition-all duration-300"
-          style={{ width: `${(step / 5) * 100}%` }}
+          style={{ width: `${(step / totalSteps) * 100}%` }}
         />
       </div>
 
       {/* Steps Content */}
       <div className="flex-1 flex flex-col justify-center py-4">
+        
+        {/* STEP 1: Full Name Input */}
         {step === 1 && (
+          <div className="space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <User className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">What is your name?</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                We will personalize your companion plan, daily progress, and doctor reports with your name.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <label className="text-xs font-bold text-slate-700 uppercase">Your Full Name</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={userProfile.name}
+                  onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
+                  placeholder="e.g. Rohit Sharma"
+                  className="w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-11 shadow-xs"
+                  autoFocus
+                />
+                <User className="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" />
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-blue-50/70 rounded-2xl border border-blue-100 mt-3">
+                <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                <span className="text-[11px] text-blue-900">
+                  Linked account email: <strong>{userProfile.email}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Diagnosis */}
+        {step === 2 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900">What is your diagnosis?</h2>
             <p className="text-xs text-slate-500">This customizes your daily plan, target indicators, and educational academy.</p>
@@ -1010,7 +1055,8 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
           </div>
         )}
 
-        {step === 2 && (
+        {/* STEP 3: Treatment & Monitoring */}
+        {step === 3 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900">Treatment & Monitoring</h2>
             <p className="text-xs text-slate-500">We never auto-calculate insulin units or alter prescription schedules.</p>
@@ -1059,7 +1105,8 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
           </div>
         )}
 
-        {step === 3 && (
+        {/* STEP 4: Target Unit */}
+        {step === 4 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900">Glucose Target Unit</h2>
             <p className="text-xs text-slate-500">Choose the standard unit used by your clinic and laboratory.</p>
@@ -1086,7 +1133,8 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
           </div>
         )}
 
-        {step === 4 && (
+        {/* STEP 5: Goals */}
+        {step === 5 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-slate-900">Your Primary Focus</h2>
             <p className="text-xs text-slate-500">Select what matters most right now to guide your daily plan.</p>
@@ -1117,7 +1165,8 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
           </div>
         )}
 
-        {step === 5 && (
+        {/* STEP 6: Summary */}
+        {step === 6 && (
           <div className="space-y-4 text-center">
             <div className="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
               <Sparkles className="w-8 h-8" />
@@ -1131,6 +1180,10 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-400">Patient Name</span>
                 <span className="font-bold text-slate-800">{userProfile.name}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-400">Account Email</span>
+                <span className="font-bold text-slate-800">{userProfile.email}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-400">Diagnosis</span>
@@ -1163,12 +1216,15 @@ function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
         <button
           type="button"
           onClick={() => {
-            if (step < 5) setStep(step + 1);
+            if (step === 1 && !userProfile.name.trim()) {
+              setUserProfile({ ...userProfile, name: 'Rohit Sharma' });
+            }
+            if (step < totalSteps) setStep(step + 1);
             else onComplete();
           }}
           className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-blue-500/25 transition"
         >
-          {step < 5 ? 'Continue' : 'Generate My Companion Plan'}
+          {step < totalSteps ? 'Continue' : 'Generate My Companion Plan'}
         </button>
       </div>
     </div>
@@ -1204,7 +1260,7 @@ function AllSetScreen({ userProfile, onContinue }) {
           <span className="text-xs uppercase tracking-widest text-blue-200 font-bold">Configuration Complete</span>
           <h1 className="text-3xl font-black tracking-tight">You're All Set!</h1>
           <p className="text-xs text-blue-100 leading-relaxed">
-            Welcome, {userProfile.name}. Your personalized diabetes companion is prepared and ready.
+            Welcome, {userProfile.name}. Your personalized diabetes companion is prepared and ready under {userProfile.email}.
           </p>
         </div>
 
@@ -1273,7 +1329,7 @@ function HomeScreen({
             onClick={onOpenProfile}
             className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white/50"
           >
-            {userProfile.name.split(' ').map(n => n[0]).join('')}
+            {userProfile.name ? userProfile.name.split(' ').map(n => n[0]).join('') : 'U'}
           </button>
           <div>
             <div className={`text-[11px] font-semibold ${textSecondary}`}>Welcome Back,</div>
@@ -1322,7 +1378,7 @@ function HomeScreen({
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
       </div>
 
-      {/* Upcoming Doctor Visit Banner Card (CareSync & Medica Inspired) */}
+      {/* Upcoming Doctor Visit Banner Card */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white rounded-3xl p-4.5 shadow-lg shadow-blue-500/15 relative overflow-hidden">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
@@ -1359,7 +1415,7 @@ function HomeScreen({
         </div>
       </div>
 
-      {/* Health Overview Metric Badges (CareSync Style) */}
+      {/* Health Overview Metric Badges */}
       <div className="grid grid-cols-3 gap-2.5">
         <div className={`p-3 rounded-2xl border ${cardBg}`}>
           <div className="flex items-center justify-between text-slate-400 mb-1">
@@ -1484,7 +1540,7 @@ function HomeScreen({
         </div>
       </div>
 
-      {/* Glucose Trend Graph (7-Day Bar & Line Visualizer) */}
+      {/* Glucose Trend Graph */}
       <div className={`rounded-3xl p-4 border space-y-3 ${cardBg}`}>
         <div className="flex justify-between items-center">
           <div>
@@ -1888,7 +1944,7 @@ function InsightsScreen({ glucoseLogs, userProfile, isDarkMode, onOpenReport }) 
             <Info className="w-4 h-4" /> Post-Dinner Variability
           </div>
           <p className={`text-xs leading-relaxed ${textSecondary}`}>
-            Dinner readings had slight variations on late-meal days. Consider noting dinner meal contents for Dr. Mahmood.
+            Dinner readings had slight variations on late-meal days. Consider noting dinner meal contents for your doctor.
           </p>
         </div>
       </div>
@@ -2096,7 +2152,6 @@ function ClinicalReportModal({ userProfile, glucoseLogs, medications, vitals, is
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      // Dynamically load jsPDF
       const loadJsPDF = () => {
         return new Promise((resolve, reject) => {
           if (window.jspdf && window.jspdf.jsPDF) {
@@ -2202,7 +2257,6 @@ function ClinicalReportModal({ userProfile, glucoseLogs, medications, vitals, is
       doc.save(fileName);
     } catch (err) {
       console.error("PDF Export error:", err);
-      // Clean fallback: window.print()
       window.print();
     } finally {
       setIsExporting(false);
@@ -2291,9 +2345,9 @@ function ProfileModal({ userProfile, setUserProfile, vitals, isDarkMode, setIsDa
   const handleSaveProfile = () => {
     setUserProfile(prev => ({
       ...prev,
-      name: tempName,
-      email: tempEmail,
-      phone: tempPhone
+      name: tempName.trim() || prev.name,
+      email: tempEmail.trim() || prev.email,
+      phone: tempPhone.trim() || prev.phone
     }));
     setIsEditing(false);
   };
@@ -2316,7 +2370,7 @@ function ProfileModal({ userProfile, setUserProfile, vitals, isDarkMode, setIsDa
         }`}>
           <div className="flex items-center gap-3.5">
             <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shadow-sm">
-              {userProfile.name.split(' ').map(n => n[0]).join('')}
+              {userProfile.name ? userProfile.name.split(' ').map(n => n[0]).join('') : 'U'}
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-black">{userProfile.name}</h4>
