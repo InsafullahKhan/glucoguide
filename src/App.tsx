@@ -4,6 +4,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Award,
+  Bell,
   BookOpen,
   Calendar,
   Check,
@@ -14,6 +15,7 @@ import {
   Clock,
   Download,
   Eye,
+  EyeOff,
   FileText,
   Flame,
   Heart,
@@ -21,10 +23,15 @@ import {
   Home,
   Info,
   Layers,
+  Lock,
+  LogOut,
+  Mail,
+  MapPin,
   MessageSquare,
   Moon,
   MoreHorizontal,
   Navigation,
+  Phone,
   Pill,
   Plus,
   RefreshCw,
@@ -34,10 +41,12 @@ import {
   Shield,
   ShieldAlert,
   Sparkles,
+  Stethoscope,
   Sun,
   TrendingDown,
   TrendingUp,
   User,
+  UserCheck,
   Users,
   Utensils,
   Volume2,
@@ -57,102 +66,58 @@ const DEFAULT_TARGETS_MGDL = {
   severeHyperThreshold: 300
 };
 
-const DEFAULT_TARGETS_MMOL = {
-  fastingMin: 4.4,
-  fastingMax: 7.2,
-  postMealMax: 10.0,
-  hypoThreshold: 3.9,
-  hyperThreshold: 13.9,
-  severeHyperThreshold: 16.7
-};
+const INITIAL_DOCTORS = [
+  {
+    id: 'doc1',
+    name: 'Dr. Tariq Mahmood',
+    specialty: 'Endocrinologist & Diabetologist',
+    rating: 4.9,
+    reviews: 320,
+    hospital: 'City Health Specialty Care',
+    nextAvailable: 'Tomorrow, 10:30 AM',
+    fee: '$45.00',
+    avatar: 'TM',
+    color: 'bg-blue-600'
+  },
+  {
+    id: 'doc2',
+    name: 'Dr. Aditi Singh',
+    specialty: 'Certified Diabetes Care & Nutrition',
+    rating: 4.8,
+    reviews: 194,
+    hospital: 'Metabolic Wellness Center',
+    nextAvailable: 'Wed, 2:00 PM',
+    fee: '$35.00',
+    avatar: 'AS',
+    color: 'bg-teal-600'
+  },
+  {
+    id: 'doc3',
+    name: 'Dr. Eion Morgan',
+    specialty: 'Cardiovascular & Preventive Health',
+    rating: 4.9,
+    reviews: 412,
+    hospital: 'Heart & Vascular Institute',
+    nextAvailable: 'Friday, 11:15 AM',
+    fee: '$50.00',
+    avatar: 'EM',
+    color: 'bg-indigo-600'
+  }
+];
 
 const SAMPLE_GLUCOSE_LOGS = [
-  { id: 'g1', timestamp: '2026-09-19T07:45:00', value: 104, unit: 'mg/dL', context: 'Fasting', mealRelation: 'before', tags: ['Waking', 'Restful sleep'], notes: 'Felt refreshed' },
-  { id: 'g2', timestamp: '2026-09-19T13:30:00', value: 138, unit: 'mg/dL', context: 'After Lunch', mealRelation: 'after_2h', tags: ['Walked 15 min', 'Roti & Daal'], notes: 'Post-lunch walk' },
-  { id: 'g3', timestamp: '2026-09-19T19:15:00', value: 112, unit: 'mg/dL', context: 'Before Dinner', mealRelation: 'before', tags: ['Routine'], notes: '' },
+  { id: 'g1', timestamp: '2026-09-20T08:00:00', value: 104, unit: 'mg/dL', context: 'Fasting', mealRelation: 'before', tags: ['Waking'], notes: 'Normal rest' },
+  { id: 'g2', timestamp: '2026-09-19T13:30:00', value: 138, unit: 'mg/dL', context: 'After Lunch', mealRelation: 'after_2h', tags: ['Walked 15 min'], notes: 'Post-lunch walk' },
+  { id: 'g3', timestamp: '2026-09-19T20:15:00', value: 112, unit: 'mg/dL', context: 'After Dinner', mealRelation: 'after_2h', tags: ['Roti & Daal'], notes: 'Balanced meal' },
   { id: 'g4', timestamp: '2026-09-18T08:00:00', value: 108, unit: 'mg/dL', context: 'Fasting', mealRelation: 'before', tags: ['Waking'], notes: '' },
   { id: 'g5', timestamp: '2026-09-18T14:10:00', value: 142, unit: 'mg/dL', context: 'After Lunch', mealRelation: 'after_2h', tags: ['Desk work'], notes: '' },
-  { id: 'g6', timestamp: '2026-09-18T21:40:00', value: 118, unit: 'mg/dL', context: 'Bedtime', mealRelation: 'bedtime', tags: ['Chamomile tea'], notes: 'Ready for sleep' },
-  { id: 'g7', timestamp: '2026-09-17T07:50:00', value: 99, unit: 'mg/dL', context: 'Fasting', mealRelation: 'before', tags: ['Waking'], notes: '' }
+  { id: 'g6', timestamp: '2026-09-17T07:50:00', value: 99, unit: 'mg/dL', context: 'Fasting', mealRelation: 'before', tags: ['Waking'], notes: '' }
 ];
 
 const INITIAL_MEDICATIONS = [
   { id: 'm1', name: 'Metformin', dose: '500 mg', timing: 'Morning with breakfast', taken: true, prescribedFor: 'Insulin sensitivity' },
   { id: 'm2', name: 'Metformin', dose: '500 mg', timing: 'Evening with dinner', taken: false, prescribedFor: 'Insulin sensitivity' },
-  { id: 'm3', name: 'Empagliflozin (Jardiance)', dose: '10 mg', timing: 'Morning', taken: true, prescribedFor: 'Cardiorenal & glucose support' }
-];
-
-const SAMPLE_MEALS = [
-  { id: 'f1', mealType: 'Breakfast', name: 'Eggs, Whole Wheat Toast & Spinach', carbs: '28g', protein: '18g', plateBalanced: true, time: '8:15 AM' },
-  { id: 'f2', mealType: 'Lunch', name: 'Lentil Daal, 1 Roti & Fresh Cucumber Salad', carbs: '45g', protein: '14g', plateBalanced: true, time: '1:10 PM' }
-];
-
-const SAMPLE_ACTIVITIES = [
-  { id: 'a1', type: 'Post-Meal Walking', duration: 15, intensity: 'Moderate', preGlucose: 152, postGlucose: 128, notes: 'Felt energizing' },
-  { id: 'a2', type: 'Gentle Mobility & Stretching', duration: 10, intensity: 'Low', preGlucose: null, postGlucose: null, notes: 'Morning joints warmup' }
-];
-
-const ACADEMY_LESSONS = [
-  {
-    id: 'l1',
-    category: 'Foundations',
-    title: 'Understanding Your Blood Glucose & Targets',
-    readTime: '3 min read',
-    summary: 'How glucose acts as fuel, why ranges vary, and how individualized targets protect your long-term health.',
-    takeaway: 'Targets are personal. Consistent moderate ranges matter much more than single day-to-day spikes.',
-    source: 'American Diabetes Association (ADA) 2026 Standards of Care',
-    forTypes: ['type1', 'type2', 'gestational', 'prediabetes']
-  },
-  {
-    id: 'l2',
-    category: 'Nutrition',
-    title: 'The Visual Plate Method: A No-Stress Eating Approach',
-    readTime: '4 min read',
-    summary: 'Divide your plate into ½ non-starchy vegetables, ¼ lean proteins, and ¼ quality complex carbohydrates for natural glucose smoothing.',
-    takeaway: 'You do not need strict deprivation. Balancing carbohydrates with fiber and protein cushions post-meal rises.',
-    source: 'National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK)',
-    forTypes: ['type1', 'type2', 'gestational', 'prediabetes']
-  },
-  {
-    id: 'l3',
-    category: 'Safety',
-    title: 'Hypoglycemia & The Rule of 15',
-    readTime: '3 min read',
-    summary: 'Recognize early signs of low glucose (<70 mg/dL or 3.9 mmol/L) and treat with 15 grams of fast-acting glucose, re-checking after 15 minutes.',
-    takeaway: 'Treat lows gently with quick carbs (glucose tabs or 4oz juice), never high-fat chocolates that slow glucose absorption.',
-    source: 'ADA 2026 Hypoglycemia Guidelines',
-    forTypes: ['type1', 'type2', 'gestational']
-  },
-  {
-    id: 'l4',
-    category: 'Activity',
-    title: 'Movement as Medicine: The 15-Minute Post-Meal Walk',
-    readTime: '3 min read',
-    summary: 'Muscles pull glucose directly from the bloodstream without requiring extra insulin when active after eating.',
-    takeaway: 'Even 10 to 15 minutes of light walking right after your main meal significantly blunts glucose peaks.',
-    source: 'ADA 2026 Physical Activity Recommendations',
-    forTypes: ['type1', 'type2', 'prediabetes', 'gestational']
-  },
-  {
-    id: 'l5',
-    category: 'Preventive Care',
-    title: 'Comprehensive Foot, Eye & Kidney Health',
-    readTime: '5 min read',
-    summary: 'Why daily 60-second foot checks, annual dilated eye exams, and eGFR/uACR urine tests keep you ahead of complications.',
-    takeaway: 'Preventive screenings identify subtle shifts years before symptoms appear. Early detection protects nerve and vessel health.',
-    source: 'ADA & CDC Diabetes Prevention & Care Network',
-    forTypes: ['type1', 'type2']
-  },
-  {
-    id: 'l6',
-    category: 'Pregnancy',
-    title: 'Managing Gestational Diabetes Safely',
-    readTime: '4 min read',
-    summary: 'Specific tighter targets during pregnancy support both baby development and maternal well-being.',
-    takeaway: 'Gestational targets are naturally tighter. Regular coordination with your obstetric and endocrine team is key.',
-    source: 'ACOG & ADA Gestational Care Consensus',
-    forTypes: ['gestational']
-  }
+  { id: 'm3', name: 'Empagliflozin (Jardiance)', dose: '10 mg', timing: 'Morning', taken: true, prescribedFor: 'Cardiorenal protection' }
 ];
 
 const EMERGENCY_KEYWORDS = [
@@ -161,191 +126,160 @@ const EMERGENCY_KEYWORDS = [
   'fruity breath', 'confusion', 'dka', 'ketoacidosis', 'extreme low', 'stroke'
 ];
 
-const REGIONAL_FOOD_DB = [
-  { name: 'Roti / Chapati (Whole wheat, 1 medium)', carbLevel: 'Moderate (15-20g)', note: 'Higher fiber; pair with protein & greens' },
-  { name: 'Brown or Basmati Rice (1/2 cup cooked)', carbLevel: 'Moderate (22g)', note: 'Portion-sensitive; pair with lentils & salad' },
-  { name: 'Daal (Lentils / Chana / Moong, 1 cup)', carbLevel: 'Carb + High Fiber & Protein (20g net)', note: 'Excellent plant protein & steady release' },
-  { name: 'Grilled Chicken Tikka / Kebab', carbLevel: 'Low carb (<3g)', note: 'High lean protein; supports satiety' },
-  { name: 'Palak / Mixed Sabzi (Vegetable curry)', carbLevel: 'Low-to-moderate carb', note: 'Rich in micronutrients and dietary fiber' },
-  { name: 'Plain Greek Yogurt / Dahi (1 cup)', carbLevel: 'Low carb (6-8g)', note: 'Probiotics and quality protein' },
-  { name: 'Naan / Paratha (Refined flour)', carbLevel: 'High carbohydrate & fat', note: 'Consider smaller portion & eat with fiber' }
-];
-
 export default function App() {
-  // Navigation: 'onboarding' | 'home' | 'track' | 'insights' | 'learn' | 'chat' | 'settings' | 'reportModal'
-  const [activeTab, setActiveTab] = useState('home');
-  const [isOnboardingCompleted, setIsOnboardingCompleted] = useState(true);
-  const [onboardingStep, setOnboardingStep] = useState(1);
-  const [selectedTrackTab, setSelectedTrackTab] = useState('glucose'); // 'glucose' | 'food' | 'meds' | 'activity' | 'vitals'
+  // Navigation & Screen lifecycle: 'splash' | 'auth' | 'onboarding' | 'allSet' | 'main'
+  const [screen, setScreen] = useState('splash');
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'track' | 'appointments' | 'insights' | 'chat'
+  
+  // Theme state
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // User Profile state
+  // User Profile State
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    name: 'Insafullah',
-    email: 'insaf@example.com',
+    name: 'Rohit Sharma',
+    email: 'rohit.sharma@example.com',
+    phone: '+1 (555) 349-2810',
+    bloodGroup: 'B+',
+    height: "5' 10\"",
+    weight: '74 kg',
     diabetesType: 'type2', // 'type1' | 'type2' | 'gestational' | 'prediabetes' | 'unsure'
     diagnosisTimeframe: '1–5 years',
     isPregnant: false,
     pregnancyWeek: 24,
     usesInsulin: false,
-    insulinType: '',
-    monitoringMethod: 'Both', // 'Finger-stick', 'CGM', 'Both'
-    units: 'mg/dL', // 'mg/dL' | 'mmol/L'
-    activityLevel: 'Lightly active',
+    monitoringMethod: 'Both',
+    units: 'mg/dL',
     primaryGoal: 'Understand glucose patterns & build a walking routine',
-    healthConditions: ['High blood pressure'],
-    targets: { ...DEFAULT_TARGETS_MGDL },
-    emergencyContact: { name: 'Ayesha Khan', relation: 'Spouse', phone: '+92 300 1234567' },
-    doctor: { name: 'Dr. Tariq Mahmood (Endocrinologist)', clinic: 'City Health Medical' }
+    doctor: { name: 'Dr. Tariq Mahmood', specialty: 'Endocrinologist', clinic: 'City Health Specialty' },
+    emergencyContact: { name: 'Ayesha Sharma', relation: 'Spouse', phone: '+1 (555) 902-8371' },
+    nextAppointment: {
+      doctor: 'Dr. Tariq Mahmood',
+      specialty: 'Endocrinologist',
+      date: 'Sept 23, 2026',
+      time: '10:30 AM',
+      location: 'City Health Specialty, Suite 402'
+    }
   });
 
   // Health data states
   const [glucoseLogs, setGlucoseLogs] = useState(SAMPLE_GLUCOSE_LOGS);
   const [medications, setMedications] = useState(INITIAL_MEDICATIONS);
-  const [meals, setMeals] = useState(SAMPLE_MEALS);
-  const [activities, setActivities] = useState(SAMPLE_ACTIVITIES);
-  const [footCheckDoneToday, setFootCheckDoneToday] = useState(true);
   const [vitals, setVitals] = useState({
     a1c: '6.8%',
-    a1cDate: 'August 12, 2026',
+    a1cDate: 'August 2026',
     bpSystolic: 122,
     bpDiastolic: 78,
-    weightKg: 74.5,
-    lastEyeExam: 'March 2026',
-    egfr: 98
+    heartRate: 72,
+    weightKg: 74,
+    footInspectionDone: true
   });
 
-  // Daily Tasks state
+  // Daily Tasks
   const [dailyTasks, setDailyTasks] = useState([
     { id: 't1', title: 'Log morning fasting glucose', category: 'glucose', completed: true },
     { id: 't2', title: 'Take morning prescribed Metformin', category: 'meds', completed: true },
     { id: 't3', title: '15-minute gentle walk after lunch', category: 'activity', completed: true },
-    { id: 't4', title: 'Perform daily 60-second foot check', category: 'preventive', completed: true },
+    { id: 't4', title: 'Daily 60-second preventive foot check', category: 'care', completed: true },
     { id: 't5', title: 'Log evening dinner plate', category: 'nutrition', completed: false },
     { id: 't6', title: 'Record bedtime glucose reading', category: 'glucose', completed: false }
   ]);
 
-  // Safety Alerts Modal
-  const [safetyAlert, setSafetyAlert] = useState(null); // { type: 'hypo' | 'hyper' | 'emergency', value: 64, title, instructions }
-
-  // Quick Log Modal State
+  // Modals & Interstitials
+  const [safetyAlert, setSafetyAlert] = useState(null);
   const [showLogModal, setShowLogModal] = useState(false);
-  const [logType, setLogType] = useState('glucose'); // 'glucose' | 'food' | 'activity'
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // AI Chat State
+  // AI Chat Assistant state
   const [chatMessages, setChatMessages] = useState([
     {
       id: 'c1',
       sender: 'assistant',
-      text: "Hello Insafullah. I am your GlucoGuide companion. How can I support your routine today? You can ask about meal planning, glucose patterns, or preparing questions for your doctor.",
-      sources: ['ADA 2026 Guidelines', 'NIDDK Self-Care Principles']
+      text: "Hello Rohit! I'm your GlucoGuide companion. How are you feeling today? You can ask me about meal ideas, glucose readings, or questions to prepare for Dr. Mahmood.",
+      sources: ['ADA 2026 Standards of Care', 'NIDDK Guidelines']
     }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Filter for Academy
-  const [selectedAcademyCategory, setSelectedAcademyCategory] = useState('All');
+  useEffect(() => {
+    if (screen === 'splash') {
+      const timer = setTimeout(() => {
+        setScreen('auth');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
 
-  // Interactive Plate Builder State
-  const [plateComposition, setPlateComposition] = useState({
-    vegetables: 'Cucumber & Steamed Spinach',
-    protein: 'Grilled Herb Chicken',
-    carbs: '1 Whole Wheat Roti'
-  });
-
-  const completedTasksCount = dailyTasks.filter(t => t.completed).length;
-  const totalTasksCount = dailyTasks.length;
-  const taskProgressPct = Math.round((completedTasksCount / totalTasksCount) * 100);
-
+  // Derived metrics
+  const completedTasks = dailyTasks.filter(t => t.completed).length;
+  const totalTasks = dailyTasks.length;
+  const taskProgressPct = Math.round((completedTasks / totalTasks) * 100);
   const recentGlucose = glucoseLogs[0] || { value: 104, unit: 'mg/dL', context: 'Fasting' };
 
-  // Calculate TIR statistics from logs
-  const tirStats = useMemo(() => {
-    if (!glucoseLogs.length) return { inRange: 82, low: 4, high: 14, avg: 118 };
-    let lowCount = 0;
-    let inRangeCount = 0;
-    let highCount = 0;
-    let totalVal = 0;
+  const handleAddGlucose = (val, context, tags = [], notes = '') => {
+    const num = Number(val);
+    if (!num || isNaN(num)) return;
 
-    glucoseLogs.forEach(l => {
-      totalVal += l.value;
-      if (l.value < 70) lowCount++;
-      else if (l.value > 180) highCount++;
-      else inRangeCount++;
-    });
-
-    const total = glucoseLogs.length;
-    return {
-      inRange: Math.round((inRangeCount / total) * 100),
-      low: Math.round((lowCount / total) * 100),
-      high: Math.round((highCount / total) * 100),
-      avg: Math.round(totalVal / total)
-    };
-  }, [glucoseLogs]);
-
-  const handleAddGlucose = (valueNum, context, tags = [], notes = '') => {
-    const val = Number(valueNum);
-    if (!val || isNaN(val)) return;
-
-    const newLog = {
+    const newEntry = {
       id: 'g_' + Date.now(),
       timestamp: new Date().toISOString(),
-      value: val,
+      value: num,
       unit: userProfile.units,
       context: context || 'Manual Check',
       mealRelation: context.toLowerCase().includes('after') ? 'after_2h' : 'before',
-      tags: tags,
-      notes: notes
+      tags,
+      notes
     };
 
-    setGlucoseLogs([newLog, ...glucoseLogs]);
+    setGlucoseLogs([newEntry, ...glucoseLogs]);
 
-    // Safety checks according to 2026 ADA guidelines
-    if (val < 70) {
+    // Safety checks for hypoglycemia (<70) and severe hyperglycemia (>=300)
+    if (num < 70) {
       setSafetyAlert({
         type: 'hypo',
-        value: val,
-        title: 'Low Blood Glucose Reading Detected',
-        level: 'Hypoglycemia Warning',
+        value: num,
+        title: 'Low Blood Glucose Detected',
+        level: 'Hypoglycemia Warning (<70 mg/dL)',
         instructions: [
-          'Follow the Rule of 15: Consume 15–20 grams of fast-acting glucose (e.g., 4 glucose tablets, 1/2 cup fruit juice, or 4 jelly candies).',
-          'Rest calmly for 15 minutes.',
-          'Re-check your blood glucose.',
-          'If still under 70 mg/dL, repeat the 15g intake.',
-          'If you experience severe confusion, dizziness, or cannot safely swallow, seek immediate emergency help.'
+          'Follow the Rule of 15: Take 15–20g fast-acting glucose (4 glucose tabs, 1/2 cup fruit juice, or 4 candies).',
+          'Rest calmly for 15 minutes and recheck your glucose.',
+          'If still below 70 mg/dL, repeat the 15g intake.',
+          'If you experience confusion or severe symptoms, seek urgent medical help immediately.'
         ]
       });
-    } else if (val >= 300) {
+    } else if (num >= 300) {
       setSafetyAlert({
         type: 'hyper',
-        value: val,
-        title: 'Very High Blood Glucose Reading',
+        value: num,
+        title: 'High Glucose Warning',
         level: 'Elevated Risk / Potential Emergency',
         instructions: [
-          'Review whether you took your prescribed medication according to your schedule.',
-          'Drink plenty of plain water to stay well-hydrated.',
-          'If you have Type 1 diabetes, check for urinary or blood ketones immediately.',
-          'Look for urgent symptoms: nausea, vomiting, stomach pain, heavy breathing, or fruity-smelling breath.',
-          'If ketone levels are elevated or nausea/vomiting is present, contact your healthcare provider or emergency services immediately.'
+          'Check whether you took your prescribed medication according to your schedule.',
+          'Drink plenty of plain water to stay hydrated.',
+          'Check for ketones if you use insulin or have Type 1 diabetes.',
+          'Contact your doctor or emergency center if nausea, vomiting, or deep breathing occurs.'
         ]
       });
     }
   };
 
   const handleSendMessage = async (textToSend) => {
-    const userQuery = textToSend || chatInput;
-    if (!userQuery.trim()) return;
+    const query = textToSend || chatInput;
+    if (!query.trim()) return;
 
-    const newMsg = { id: 'usr_' + Date.now(), sender: 'user', text: userQuery };
-    setChatMessages(prev => [...prev, newMsg]);
+    const userMsg = { id: 'usr_' + Date.now(), sender: 'user', text: query };
+    setChatMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setIsAiLoading(true);
 
-    // 1. Critical safety emergency classifier
-    const lowerQuery = userQuery.toLowerCase();
-    const hasEmergencyWord = EMERGENCY_KEYWORDS.some(k => lowerQuery.includes(k));
-
-    if (hasEmergencyWord) {
+    // Emergency check
+    const lower = query.toLowerCase();
+    const isEmer = EMERGENCY_KEYWORDS.some(k => lower.includes(k));
+    if (isEmer) {
       setTimeout(() => {
         setChatMessages(prev => [
           ...prev,
@@ -353,48 +287,44 @@ export default function App() {
             id: 'asst_emer_' + Date.now(),
             sender: 'assistant',
             isEmergency: true,
-            text: "⚠️ URGENT SAFETY NOTICE: The symptoms you described may represent a medical emergency (such as severe hypoglycemia, ketoacidosis, or acute distress).\n\nPlease stop using this app and seek immediate in-person emergency medical care or call your local emergency services (such as 911 or 1122). GlucoGuide cannot diagnose or manage acute health emergencies.",
-            sources: ['Emergency Medical Protocol', 'ADA / CDC Crisis Care Guidelines']
+            text: "⚠️ URGENT MEDICAL NOTICE: The symptoms you mentioned may indicate an acute emergency (such as severe hypoglycemia or ketoacidosis). Please seek emergency medical care immediately or call your local emergency services (e.g. 911 / 1122). GlucoGuide cannot diagnose or handle emergencies.",
+            sources: ['Emergency Care Protocol']
           }
         ]);
         setIsAiLoading(false);
-      }, 400);
+      }, 500);
       return;
     }
 
-    // 2. Query Gemini API with health context and safety instructions
     try {
-      const apiKey = ""; // Canvas provides runtime API key
+      const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-      const systemPrompt = `You are "GlucoGuide", an empathetic, respectful, and evidence-informed diabetes self-management educator.
-Important Rules:
-1. You are NOT a doctor and do NOT diagnose conditions.
-2. NEVER calculate or recommend specific insulin dosage adjustments or tell the user to stop medications.
-3. Advise that individual medical questions must always be discussed with their healthcare professional.
-4. Tone: Calm, warm, clear, professional, non-judgmental. Avoid exclamation marks and cheesy emojis.
-5. User Context: ${userProfile.name}, Diabetes: ${userProfile.diabetesType}, Uses Insulin: ${userProfile.usesInsulin ? 'Yes' : 'No'}, Glucose Units: ${userProfile.units}.
-6. Ground your answers in standards from the American Diabetes Association (ADA 2026), NIDDK, and CDC. Include a brief mention of the educational source.`;
+      const systemPrompt = `You are GlucoGuide, a calm, supportive, evidence-informed diabetes self-management educator.
+Strict Rules:
+1. You are NOT a doctor and never diagnose or change medications/insulin.
+2. Tone: Warm, professional, concise, reassuring.
+3. User: ${userProfile.name}, Type: ${userProfile.diabetesType}, Insulin: ${userProfile.usesInsulin ? 'Yes' : 'No'}.
+4. Ground responses in ADA 2026 and NIDDK guidelines.`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: userQuery }] }],
+          contents: [{ parts: [{ text: query }] }],
           systemInstruction: { parts: [{ text: systemPrompt }] }
         })
       });
 
       const data = await response.json();
-      const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (generatedText) {
+      if (answer) {
         setChatMessages(prev => [
           ...prev,
           {
             id: 'asst_' + Date.now(),
             sender: 'assistant',
-            text: generatedText,
+            text: answer,
             sources: ['ADA 2026 Standards of Care', 'NIDDK Guidelines']
           }
         ]);
@@ -402,21 +332,13 @@ Important Rules:
         throw new Error('Fallback needed');
       }
     } catch (err) {
-      // Robust clinical fallback when offline or API call is restrained
-      let fallbackText = "Morning glucose can be influenced by multiple factors including the dawn phenomenon (natural hormone shifts), dinner composition, timing of evening medication, and sleep quality. Looking at your 7-day pattern can help uncover trends to discuss with your healthcare professional.";
-      if (lowerQuery.includes('a1c')) {
-        fallbackText = "An A1C test measures your average blood glucose over the past 2 to 3 months by gauging the percentage of glycated hemoglobin. For many non-pregnant adults, the ADA general guideline is under 7.0%, but personal targets must always be individualized with your doctor.";
-      } else if (lowerQuery.includes('walk') || lowerQuery.includes('exercise')) {
-        fallbackText = "A 10 to 15 minute walk after a meal helps skeletal muscles absorb glucose directly from the bloodstream without requiring higher insulin levels, effectively dampening post-meal glucose spikes.";
-      }
-
       setChatMessages(prev => [
         ...prev,
         {
           id: 'asst_fb_' + Date.now(),
           sender: 'assistant',
-          text: fallbackText + "\n\nNote: Always review recurring patterns with your personal healthcare team before modifying your routine.",
-          sources: ['ADA 2026 Clinical Education Series']
+          text: "Blood glucose can fluctuate due to sleep patterns, meal composition, and physical activity. Consistent routines like light post-meal walks help stabilize values. Always discuss your personal logs with Dr. Mahmood.",
+          sources: ['ADA Clinical Education']
         }
       ]);
     } finally {
@@ -424,404 +346,160 @@ Important Rules:
     }
   };
 
-  const toggleTask = (taskId) => {
-    setDailyTasks(prev =>
-      prev.map(t => (t.id === taskId ? { ...t, completed: !t.completed } : t))
-    );
-  };
-
-  const toggleMedication = (medId) => {
-    setMedications(prev =>
-      prev.map(m => (m.id === medId ? { ...m, taken: !m.taken } : m))
-    );
-  };
-
-  if (!isOnboardingCompleted) {
+  if (screen === 'splash') {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between max-w-md mx-auto shadow-2xl border-x border-slate-200">
-        {/* Onboarding Header */}
-        <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold">
-              G
+      <div className="min-h-screen bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-800 text-white flex flex-col items-center justify-between p-8 font-sans select-none">
+        <div className="w-full flex justify-end">
+          <button
+            type="button"
+            onClick={() => setScreen('auth')}
+            className="text-xs text-blue-200/80 hover:text-white bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm transition font-medium"
+          >
+            Skip ➔
+          </button>
+        </div>
+
+        {/* Animated Brand Logo matching the UI Kit */}
+        <div className="flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-700">
+          <div className="relative">
+            {/* Glowing outer rings */}
+            <div className="w-32 h-32 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl animate-pulse">
+              <div className="w-24 h-24 rounded-2xl bg-white text-blue-600 flex items-center justify-center shadow-lg transform transition duration-500 hover:scale-105">
+                {/* Healthcare Logo: Heart + Stethoscope + Droplet */}
+                <div className="relative flex items-center justify-center">
+                  <Heart className="w-14 h-14 text-blue-600 fill-blue-50 stroke-[1.8]" />
+                  <Activity className="w-7 h-7 text-blue-600 absolute stroke-[2.5]" />
+                </div>
+              </div>
             </div>
-            <span className="font-semibold text-slate-800 tracking-tight">GlucoGuide</span>
+            {/* Ambient indicator ping */}
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-cyan-400"></span>
+            </span>
           </div>
-          <span className="text-xs font-medium px-2.5 py-1 bg-teal-50 text-teal-700 rounded-full border border-teal-100">
-            Step {onboardingStep} of 6
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center justify-center gap-1.5">
+              GlucoGuide
+            </h1>
+            <p className="text-xs text-blue-100 font-medium tracking-wide uppercase">
+              All in One Diabetes Care App
+            </p>
+          </div>
+
+          <p className="text-sm text-blue-100/80 max-w-xs font-normal leading-relaxed">
+            Personalized glucose tracking, smart care plans, and seamless doctor collaboration.
+          </p>
+        </div>
+
+        {/* 3-Second Loading Bar Indicator */}
+        <div className="w-full max-w-xs space-y-3 text-center">
+          <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-white h-full rounded-full animate-[progress_3s_ease-in-out_forwards]" 
+                 style={{ width: '100%', animationDuration: '3000ms' }} />
+          </div>
+          <span className="text-[11px] text-blue-200/90 font-medium tracking-wide">
+            Loading your health companion...
           </span>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-100 h-1">
-          <div 
-            className="bg-teal-600 h-1 transition-all duration-300"
-            style={{ width: `${(onboardingStep / 6) * 100}%` }}
-          />
-        </div>
-
-        {/* Step Contents */}
-        <div className="p-6 flex-1 flex flex-col justify-center">
-          {onboardingStep === 1 && (
-            <div className="space-y-5">
-              <div className="w-14 h-14 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center">
-                <Heart className="w-7 h-7" />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-                Take control of your diabetes, one day at a time.
-              </h1>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Track your health, understand personal glucose patterns, build sustainable daily routines, and stay closely connected with your care team.
-              </p>
-              
-              <div className="p-4 bg-slate-100 rounded-xl border border-slate-200 text-xs text-slate-600 flex gap-3">
-                <Shield className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-                <span>{MEDICAL_DISCLAIMER_TEXT}</span>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 2 && (
-            <div className="space-y-5">
-              <h2 className="text-xl font-bold text-slate-900">About You & Units</h2>
-              <p className="text-xs text-slate-500">Let's configure your display according to how your clinic tracks results.</p>
-              
-              <div>
-                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Your First Name</label>
-                <input
-                  type="text"
-                  value={userProfile.name}
-                  onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                  className="mt-1 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="e.g. Insafullah"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Preferred Glucose Unit</label>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  {['mg/dL', 'mmol/L'].map(unit => (
-                    <button
-                      key={unit}
-                      type="button"
-                      onClick={() => setUserProfile({ ...userProfile, units: unit })}
-                      className={`py-3 px-4 rounded-xl border text-sm font-semibold transition-all ${
-                        userProfile.units === unit
-                          ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      {unit}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1.5">You can change your preferred unit anytime in settings.</p>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-slate-900">What best describes you?</h2>
-              <p className="text-xs text-slate-500">This tailors your daily plan, target indicators, and educational academy.</p>
-
-              <div className="space-y-2.5">
-                {[
-                  { id: 'type2', label: 'Type 2 Diabetes', desc: 'Focus on lifestyle, medications, and steady daily routines' },
-                  { id: 'type1', label: 'Type 1 Diabetes', desc: 'Focus on insulin tracking, carb ratios, and hypoglycemia prevention' },
-                  { id: 'gestational', label: 'Gestational Diabetes', desc: 'Activates Pregnancy Mode with dedicated tighter targets' },
-                  { id: 'prediabetes', label: 'Prediabetes', desc: 'Focus on habit building, weight balance, and risk reduction' },
-                  { id: 'unsure', label: "I'm not sure", desc: 'We do not diagnose you; we provide basic tracking' }
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      const isPreg = item.id === 'gestational';
-                      setUserProfile({ ...userProfile, diabetesType: item.id, isPregnant: isPreg });
-                    }}
-                    className={`w-full text-left p-3.5 rounded-xl border transition-all ${
-                      userProfile.diabetesType === item.id
-                        ? 'bg-teal-50 border-teal-500 ring-1 ring-teal-500'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm text-slate-900">{item.label}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{item.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 4 && (
-            <div className="space-y-5">
-              {userProfile.diabetesType === 'gestational' ? (
-                <>
-                  <div className="p-3 bg-pink-50 border border-pink-200 rounded-xl flex items-center gap-3">
-                    <Heart className="w-5 h-5 text-pink-600 shrink-0" />
-                    <span className="text-xs font-medium text-pink-800">
-                      Pregnancy Mode Activated: Educational targets align with maternal care.
-                    </span>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Current Pregnancy Week</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="42"
-                      value={userProfile.pregnancyWeek}
-                      onChange={(e) => setUserProfile({ ...userProfile, pregnancyWeek: e.target.value })}
-                      className="mt-1 w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900"
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold text-slate-900">How do you manage your care?</h2>
-                  <p className="text-xs text-slate-500">We never auto-calculate insulin units or tell you to alter prescriptions.</p>
-
-                  <div className="space-y-3">
-                    <label className="text-xs font-semibold text-slate-700 uppercase">Do you use insulin?</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setUserProfile({ ...userProfile, usesInsulin: true })}
-                        className={`p-3 rounded-xl border text-sm font-semibold ${
-                          userProfile.usesInsulin ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200'
-                        }`}
-                      >
-                        Yes, I take insulin
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setUserProfile({ ...userProfile, usesInsulin: false })}
-                        className={`p-3 rounded-xl border text-sm font-semibold ${
-                          !userProfile.usesInsulin ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200'
-                        }`}
-                      >
-                        No insulin
-                      </button>
-                    </div>
-
-                    <label className="text-xs font-semibold text-slate-700 uppercase pt-2 block">How do you measure glucose?</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['Finger-stick', 'CGM', 'Both'].map(m => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setUserProfile({ ...userProfile, monitoringMethod: m })}
-                          className={`p-2.5 rounded-xl border text-xs font-medium ${
-                            userProfile.monitoringMethod === m ? 'bg-teal-50 border-teal-600 text-teal-800 font-semibold' : 'bg-white text-slate-700 border-slate-200'
-                          }`}
-                        >
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {onboardingStep === 5 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-slate-900">What matters most right now?</h2>
-              <p className="text-xs text-slate-500">Select your top goals to prioritize on your daily home screen.</p>
-              
-              <div className="space-y-2">
-                {[
-                  'Understanding my glucose patterns',
-                  'Building a post-meal walking habit',
-                  'Eating balanced plates without stress',
-                  'Remembering my daily medications',
-                  'Preparing questions for my doctor visits',
-                  'Preventing low blood sugar (hypoglycemia)'
-                ].map(goal => (
-                  <button
-                    key={goal}
-                    type="button"
-                    onClick={() => setUserProfile({ ...userProfile, primaryGoal: goal })}
-                    className={`w-full text-left p-3 rounded-xl border text-xs font-medium flex items-center justify-between ${
-                      userProfile.primaryGoal === goal
-                        ? 'bg-teal-50 border-teal-600 text-teal-900'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{goal}</span>
-                    {userProfile.primaryGoal === goal && <Check className="w-4 h-4 text-teal-600 shrink-0" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 6 && (
-            <div className="space-y-5">
-              <div className="w-12 h-12 rounded-xl bg-teal-500 text-white flex items-center justify-center">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-900">Your Personalized Plan is Ready</h2>
-              
-              <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Profile Type:</span>
-                  <span className="font-semibold text-slate-800 capitalize">{userProfile.diabetesType}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Monitoring Mode:</span>
-                  <span className="font-semibold text-slate-800">{userProfile.monitoringMethod}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Units:</span>
-                  <span className="font-semibold text-slate-800">{userProfile.units}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-500">Primary Focus:</span>
-                  <span className="font-semibold text-slate-800 truncate max-w-[180px]">{userProfile.primaryGoal}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-500 leading-relaxed">
-                We have prepared today's plan with gentle habit check-ins and safety reminders. Remember to share your trends with Dr. Mahmood.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Onboarding Bottom Buttons */}
-        <div className="p-6 bg-white border-t border-slate-100 flex items-center justify-between gap-3">
-          {onboardingStep > 1 ? (
-            <button
-              type="button"
-              onClick={() => setOnboardingStep(onboardingStep - 1)}
-              className="px-4 py-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-1"
-            >
-              <ChevronLeft className="w-4 h-4" /> Back
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {onboardingStep < 6 ? (
-            <button
-              type="button"
-              onClick={() => setOnboardingStep(onboardingStep + 1)}
-              className="flex-1 py-3 bg-teal-600 text-white rounded-xl text-xs font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-1 shadow-sm"
-            >
-              Continue <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsOnboardingCompleted(true)}
-              className="flex-1 py-3 bg-teal-600 text-white rounded-xl text-xs font-semibold hover:bg-teal-700 transition shadow-sm"
-            >
-              Launch My Plan
-            </button>
-          )}
         </div>
       </div>
     );
   }
 
+  if (screen === 'auth') {
+    return (
+      <AuthScreen
+        mode={authMode}
+        setMode={setAuthMode}
+        onLoginSuccess={(isNewUser) => {
+          if (isNewUser || !hasCompletedOnboarding) {
+            setScreen('onboarding');
+          } else {
+            setScreen('main');
+          }
+        }}
+      />
+    );
+  }
+
+  if (screen === 'onboarding') {
+    return (
+      <OnboardingScreen
+        userProfile={userProfile}
+        setUserProfile={setUserProfile}
+        onComplete={() => {
+          setHasCompletedOnboarding(true);
+          setScreen('allSet');
+        }}
+      />
+    );
+  }
+
+  if (screen === 'allSet') {
+    return (
+      <AllSetScreen
+        userProfile={userProfile}
+        onContinue={() => setScreen('main')}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans flex justify-center selection:bg-teal-100 selection:text-teal-900">
-      <div className="w-full max-w-md bg-white min-h-screen flex flex-col shadow-2xl relative border-x border-slate-200">
-        
-        {/* Top App Header with Profile info & settings trigger */}
-        <header className="px-5 py-3.5 bg-white border-b border-slate-100 sticky top-0 z-30 flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-              G
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                GlucoGuide
-                {userProfile.isPregnant && (
-                  <span className="text-[10px] bg-pink-100 text-pink-700 px-1.5 py-0.2 rounded font-normal">
-                    Pregnancy Mode
-                  </span>
-                )}
-              </div>
-              <div className="text-[10px] text-slate-500">
-                {userProfile.name} • {userProfile.units}
-              </div>
-            </div>
-          </div>
+    <div className={`min-h-screen font-sans flex justify-center transition-colors duration-200 ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-800'
+    }`}>
+      <div className={`w-full max-w-md min-h-screen flex flex-col shadow-2xl relative border-x transition-colors duration-200 ${
+        isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-[#F8FAFC] border-slate-200'
+      }`}>
 
-          <div className="flex items-center space-x-1">
-            <button
-              type="button"
-              onClick={() => {
-                setShowLogModal(true);
-                setLogType('glucose');
-              }}
-              className="p-1.5 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg text-xs font-medium flex items-center gap-1 border border-teal-200/60"
-              title="Quick Log"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-[11px] font-semibold">Log</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('settings')}
-              className="p-2 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100"
-              title="Settings & Profile"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Safety Alert Modal Dialog */}
+        {/* Safety Alert Modal */}
         {safetyAlert && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-red-200 animate-in fade-in zoom-in duration-200">
-              <div className="flex items-start gap-3">
-                <div className={`p-2.5 rounded-xl shrink-0 ${
-                  safetyAlert.type === 'hypo' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
-                }`}>
+            <div className={`rounded-3xl max-w-sm w-full p-6 shadow-2xl border ${
+              isDarkMode ? 'bg-slate-900 border-red-500/50' : 'bg-white border-red-200'
+            }`}>
+              <div className="flex items-start gap-3.5">
+                <div className="p-3 rounded-2xl bg-red-100 text-red-600 shrink-0">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-red-600 block">
+                  <span className="text-[10px] font-bold tracking-wider uppercase text-red-600 block">
                     {safetyAlert.level}
                   </span>
-                  <h3 className="font-bold text-slate-900 text-base leading-snug">
+                  <h3 className="font-bold text-base mt-0.5 text-slate-900 dark:text-white">
                     {safetyAlert.title}
                   </h3>
-                  <div className="mt-1 text-2xl font-black text-slate-900">
-                    {safetyAlert.value} <span className="text-xs font-normal text-slate-500">{userProfile.units}</span>
+                  <div className="text-2xl font-black mt-1 text-red-600">
+                    {safetyAlert.value} <span className="text-xs font-normal text-slate-400">{userProfile.units}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-700">
-                <div className="font-semibold text-slate-900 flex items-center gap-1">
-                  <ShieldAlert className="w-4 h-4 text-teal-600" /> Recommended Self-Care Action:
+              <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+                <div className="font-bold flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+                  <ShieldAlert className="w-4 h-4 text-blue-600" /> Clinical Action Protocol:
                 </div>
-                <ul className="space-y-1.5 pl-4 list-disc text-slate-600">
-                  {safetyAlert.instructions.map((inst, idx) => (
-                    <li key={idx} className="leading-relaxed">{inst}</li>
+                <ul className="list-disc pl-4 space-y-1.5 text-slate-600 dark:text-slate-300">
+                  {safetyAlert.instructions.map((ins, i) => (
+                    <li key={i} className="leading-relaxed">{ins}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-4 flex flex-col gap-2">
+              <div className="mt-5 space-y-2">
                 <a
                   href={`tel:${userProfile.emergencyContact.phone}`}
-                  className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 transition"
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition"
                 >
-                  <AlertCircle className="w-4 h-4" /> Call Emergency Contact ({userProfile.emergencyContact.name})
+                  <Phone className="w-4 h-4" /> Call {userProfile.emergencyContact.name}
                 </a>
                 <button
                   type="button"
                   onClick={() => setSafetyAlert(null)}
-                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+                  className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-semibold"
                 >
-                  I have taken action & dismissed
+                  I have treated this & dismiss
                 </button>
               </div>
             </div>
@@ -832,154 +510,190 @@ Important Rules:
         {showLogModal && (
           <QuickLogModal
             units={userProfile.units}
+            isDarkMode={isDarkMode}
             onClose={() => setShowLogModal(false)}
             onAddGlucose={(val, ctx, tags, notes) => {
               handleAddGlucose(val, ctx, tags, notes);
               setShowLogModal(false);
             }}
-            onAddMeal={(mealObj) => {
-              setMeals([mealObj, ...meals]);
-              setShowLogModal(false);
-            }}
-            onAddActivity={(actObj) => {
-              setActivities([actObj, ...activities]);
-              setShowLogModal(false);
+          />
+        )}
+
+        {/* Doctor Summary Report Modal */}
+        {showReportModal && (
+          <ClinicalReportModal
+            userProfile={userProfile}
+            glucoseLogs={glucoseLogs}
+            medications={medications}
+            vitals={vitals}
+            isDarkMode={isDarkMode}
+            onClose={() => setShowReportModal(false)}
+          />
+        )}
+
+        {/* Profile Details Modal */}
+        {showProfileModal && (
+          <ProfileModal
+            userProfile={userProfile}
+            setUserProfile={setUserProfile}
+            vitals={vitals}
+            isDarkMode={isDarkMode}
+            onClose={() => setShowProfileModal(false)}
+            onLogoutClick={() => {
+              setShowProfileModal(false);
+              setShowLogoutConfirm(true);
             }}
           />
         )}
 
-        {/* Main Content Area */}
+        {/* Logout Confirmation Modal (Medica Style) */}
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className={`rounded-3xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl border ${
+              isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-100'
+            }`}>
+              <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center mx-auto">
+                <LogOut className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Sure You Want to Leave?
+              </h3>
+              <p className="text-xs text-slate-500">
+                You can sign back in anytime to continue your diabetes tracking.
+              </p>
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    setScreen('auth');
+                  }}
+                  className="flex-1 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Tab Views */}
         <main className="flex-1 overflow-y-auto pb-24">
           {activeTab === 'home' && (
             <HomeScreen
               userProfile={userProfile}
               recentGlucose={recentGlucose}
-              tirStats={tirStats}
+              glucoseLogs={glucoseLogs}
+              vitals={vitals}
               dailyTasks={dailyTasks}
-              completedTasksCount={completedTasksCount}
-              totalTasksCount={totalTasksCount}
+              completedTasks={completedTasks}
+              totalTasks={totalTasks}
               taskProgressPct={taskProgressPct}
               medications={medications}
-              onToggleTask={toggleTask}
-              onToggleMed={toggleMedication}
-              onOpenLog={(type) => {
-                setLogType(type);
-                setShowLogModal(true);
+              isDarkMode={isDarkMode}
+              onToggleTask={(taskId) => {
+                setDailyTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
               }}
-              onNavigate={(tab) => setActiveTab(tab)}
+              onToggleMed={(medId) => {
+                setMedications(prev => prev.map(m => m.id === medId ? { ...m, taken: !m.taken } : m));
+              }}
+              onOpenLog={() => setShowLogModal(true)}
+              onOpenReport={() => setShowReportModal(true)}
+              onOpenProfile={() => setShowProfileModal(true)}
+              onNavigate={(t) => setActiveTab(t)}
             />
           )}
 
           {activeTab === 'track' && (
-            <TrackCenterScreen
+            <TrackScreen
               userProfile={userProfile}
-              selectedSubTab={selectedTrackTab}
-              onChangeSubTab={setSelectedTrackTab}
               glucoseLogs={glucoseLogs}
               medications={medications}
-              meals={meals}
-              activities={activities}
               vitals={vitals}
-              footCheckDone={footCheckDoneToday}
-              onToggleFootCheck={() => setFootCheckDoneToday(!footCheckDoneToday)}
-              onToggleMed={toggleMedication}
-              onOpenLog={(type) => {
-                setLogType(type);
-                setShowLogModal(true);
+              isDarkMode={isDarkMode}
+              onOpenLog={() => setShowLogModal(true)}
+              onToggleMed={(id) => {
+                setMedications(prev => prev.map(m => m.id === id ? { ...m, taken: !m.taken } : m));
               }}
+            />
+          )}
+
+          {activeTab === 'appointments' && (
+            <AppointmentsScreen
+              doctors={INITIAL_DOCTORS}
+              userProfile={userProfile}
+              isDarkMode={isDarkMode}
+              onOpenReport={() => setShowReportModal(true)}
             />
           )}
 
           {activeTab === 'insights' && (
             <InsightsScreen
               glucoseLogs={glucoseLogs}
-              tirStats={tirStats}
               userProfile={userProfile}
-              medications={medications}
-              activities={activities}
-              onOpenCareReport={() => setActiveTab('reportModal')}
-            />
-          )}
-
-          {activeTab === 'learn' && (
-            <LearnAcademyScreen
-              userProfile={userProfile}
-              lessons={ACADEMY_LESSONS}
-              selectedCategory={selectedAcademyCategory}
-              onSelectCategory={setSelectedAcademyCategory}
-              onAskAssistant={(question) => {
-                setActiveTab('chat');
-                handleSendMessage(question);
-              }}
+              isDarkMode={isDarkMode}
+              onOpenReport={() => setShowReportModal(true)}
             />
           )}
 
           {activeTab === 'chat' && (
-            <ChatAssistantScreen
+            <ChatScreen
               messages={chatMessages}
               inputVal={chatInput}
               onInputChange={setChatInput}
               onSend={handleSendMessage}
               isLoading={isAiLoading}
+              isDarkMode={isDarkMode}
               userProfile={userProfile}
-            />
-          )}
-
-          {activeTab === 'settings' && (
-            <SettingsScreen
-              userProfile={userProfile}
-              onUpdateProfile={setUserProfile}
-              onBack={() => setActiveTab('home')}
-              onResetOnboarding={() => {
-                setIsOnboardingCompleted(false);
-                setOnboardingStep(1);
-              }}
-            />
-          )}
-
-          {activeTab === 'reportModal' && (
-            <ClinicalReportModal
-              userProfile={userProfile}
-              glucoseLogs={glucoseLogs}
-              tirStats={tirStats}
-              medications={medications}
-              vitals={vitals}
-              onClose={() => setActiveTab('insights')}
             />
           )}
         </main>
 
-        {/* Bottom Persistent Navigation Bar */}
-        <nav className="fixed bottom-0 max-w-md w-full bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 px-3 py-1.5 flex justify-around items-center">
+        {/* Bottom Navigation Bar (CareSync & Medica Inspired 5-Tab Bar) */}
+        <nav className={`fixed bottom-0 max-w-md w-full backdrop-blur-lg border-t z-40 px-3 py-2 flex justify-around items-center transition-colors ${
+          isDarkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/95 border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]'
+        }`}>
           <NavButton
             icon={<Home className="w-5 h-5" />}
             label="Home"
             isActive={activeTab === 'home'}
             onClick={() => setActiveTab('home')}
+            isDarkMode={isDarkMode}
           />
           <NavButton
             icon={<Activity className="w-5 h-5" />}
             label="Track"
             isActive={activeTab === 'track'}
             onClick={() => setActiveTab('track')}
+            isDarkMode={isDarkMode}
+          />
+          <NavButton
+            icon={<Calendar className="w-5 h-5" />}
+            label="Doctors"
+            isActive={activeTab === 'appointments'}
+            onClick={() => setActiveTab('appointments')}
+            isDarkMode={isDarkMode}
           />
           <NavButton
             icon={<TrendingUp className="w-5 h-5" />}
             label="Insights"
             isActive={activeTab === 'insights'}
             onClick={() => setActiveTab('insights')}
-          />
-          <NavButton
-            icon={<BookOpen className="w-5 h-5" />}
-            label="Learn"
-            isActive={activeTab === 'learn'}
-            onClick={() => setActiveTab('learn')}
+            isDarkMode={isDarkMode}
           />
           <NavButton
             icon={<MessageSquare className="w-5 h-5" />}
             label="Guide AI"
             isActive={activeTab === 'chat'}
             onClick={() => setActiveTab('chat')}
+            isDarkMode={isDarkMode}
           />
         </nav>
       </div>
@@ -987,749 +701,947 @@ Important Rules:
   );
 }
 
-function NavButton({ icon, label, isActive, onClick }) {
+function NavButton({ icon, label, isActive, onClick, isDarkMode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-        isActive ? 'text-teal-600 font-bold' : 'text-slate-400 hover:text-slate-600 font-medium'
+      className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all ${
+        isActive
+          ? 'text-blue-600 dark:text-blue-400 font-bold'
+          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
       }`}
     >
-      <div className={`transition-transform ${isActive ? 'scale-110' : ''}`}>
+      <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
         {icon}
       </div>
-      <span className="text-[10px] mt-0.5 tracking-tight">{label}</span>
-      {isActive && <div className="w-1 h-1 bg-teal-600 rounded-full mt-0.5" />}
+      <span className="text-[10px] mt-1 font-semibold">{label}</span>
+      {isActive && (
+        <span className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full mt-0.5" />
+      )}
     </button>
+  );
+}
+
+function AuthScreen({ mode, setMode, onLoginSuccess }) {
+  const [email, setEmail] = useState('rohit.sharma@example.com');
+  const [password, setPassword] = useState('••••••••••••');
+  const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLoginSuccess(mode === 'signup');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between max-w-md mx-auto p-6 font-sans">
+      <div className="w-full flex-1 flex flex-col justify-center max-w-sm mx-auto space-y-6">
+        
+        {/* Top Doctor Character / App Badge (As seen in CareSync / Medica screenshots) */}
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-inner">
+              <div className="w-18 h-18 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+                <Stethoscope className="w-10 h-10 stroke-[1.8]" />
+              </div>
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow">
+              <Plus className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              {mode === 'login' ? 'Login to Your Account' : 'Create New Account'}
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              {mode === 'login' 
+                ? 'Welcome back! Please enter your details' 
+                : 'Join GlucoGuide to manage your diabetes with ease'}
+            </p>
+          </div>
+        </div>
+
+        {/* Tab Toggle: Log In / Sign Up */}
+        <div className="bg-slate-200/80 p-1 rounded-2xl flex text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setMode('login')}
+            className={`flex-1 py-2.5 rounded-xl transition ${
+              mode === 'login' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600'
+            }`}
+          >
+            Log in
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('signup')}
+            className={`flex-1 py-2.5 rounded-xl transition ${
+              mode === 'signup' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600'
+            }`}
+          >
+            Sign up
+          </button>
+        </div>
+
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Email Address</label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
+                required
+              />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create password"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10 pr-10"
+                required
+              />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {mode === 'signup' && (
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
+                  required
+                />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
+              />
+              <span>Remember me</span>
+            </label>
+            {mode === 'login' && (
+              <button type="button" className="text-blue-600 font-bold hover:underline">
+                Forgot Password?
+              </button>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-1.5"
+          >
+            {mode === 'login' ? 'Login' : 'Sign Up'}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="relative flex py-1 items-center">
+          <div className="flex-grow border-t border-slate-200" />
+          <span className="flex-shrink mx-3 text-[11px] text-slate-400 uppercase font-semibold">Or continue with</span>
+          <div className="flex-grow border-t border-slate-200" />
+        </div>
+
+        {/* Social Buttons (Google & Quick Demo) */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => onLoginSuccess(mode === 'signup')}
+            className="py-2.5 px-4 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2 shadow-xs transition"
+          >
+            {/* Google G SVG */}
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+            <span>Google</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onLoginSuccess(false)}
+            className="py-2.5 px-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs font-bold text-blue-700 hover:bg-blue-100 flex items-center justify-center gap-1.5 transition"
+          >
+            <Zap className="w-3.5 h-3.5 text-blue-600" />
+            <span>Demo Direct</span>
+          </button>
+        </div>
+
+        <p className="text-center text-xs text-slate-500">
+          {mode === 'login' ? "Don't have an account? " : "Already have an Account? "}
+          <button
+            type="button"
+            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+            className="text-blue-600 font-bold hover:underline"
+          >
+            {mode === 'login' ? 'Sign up' : 'Log in'}
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function OnboardingScreen({ userProfile, setUserProfile, onComplete }) {
+  const [step, setStep] = useState(1);
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-between max-w-md mx-auto p-6 font-sans">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+            G
+          </div>
+          <span className="font-extrabold text-sm text-slate-900 tracking-tight">GlucoGuide Setup</span>
+        </div>
+        <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+          Step {step} of 5
+        </span>
+      </div>
+
+      {/* Step Progress Bar */}
+      <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden my-4">
+        <div
+          className="bg-blue-600 h-full rounded-full transition-all duration-300"
+          style={{ width: `${(step / 5) * 100}%` }}
+        />
+      </div>
+
+      {/* Steps Content */}
+      <div className="flex-1 flex flex-col justify-center py-4">
+        {step === 1 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">What is your diagnosis?</h2>
+            <p className="text-xs text-slate-500">This customizes your daily plan, target indicators, and educational academy.</p>
+
+            <div className="space-y-2.5 pt-2">
+              {[
+                { id: 'type2', title: 'Type 2 Diabetes', desc: 'Focus on lifestyle, medications, and steady daily routines' },
+                { id: 'type1', title: 'Type 1 Diabetes', desc: 'Focus on insulin tracking, carb ratios, and hypo safety' },
+                { id: 'gestational', title: 'Gestational Diabetes', desc: 'Activates pregnancy mode with tailored tighter targets' },
+                { id: 'prediabetes', title: 'Prediabetes', desc: 'Focus on habit building, weight balance, and risk reduction' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    const isPreg = opt.id === 'gestational';
+                    setUserProfile({ ...userProfile, diabetesType: opt.id, isPregnant: isPreg });
+                  }}
+                  className={`w-full text-left p-4 rounded-2xl border transition ${
+                    userProfile.diabetesType === opt.id
+                      ? 'bg-blue-50 border-blue-600 ring-2 ring-blue-500/20 shadow-xs'
+                      : 'bg-white border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="font-bold text-sm text-slate-900">{opt.title}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">Treatment & Monitoring</h2>
+            <p className="text-xs text-slate-500">We never auto-calculate insulin units or tell you to alter prescriptions.</p>
+
+            <div className="space-y-3 pt-2">
+              <label className="text-xs font-bold text-slate-700 uppercase">Do you take insulin?</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUserProfile({ ...userProfile, usesInsulin: true })}
+                  className={`py-3 rounded-2xl border text-xs font-bold ${
+                    userProfile.usesInsulin ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  Yes, I use insulin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUserProfile({ ...userProfile, usesInsulin: false })}
+                  className={`py-3 rounded-2xl border text-xs font-bold ${
+                    !userProfile.usesInsulin ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  No insulin
+                </button>
+              </div>
+
+              <label className="text-xs font-bold text-slate-700 uppercase pt-2 block">How do you measure glucose?</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['Finger-stick', 'CGM', 'Both'].map(m => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setUserProfile({ ...userProfile, monitoringMethod: m })}
+                    className={`py-2.5 rounded-xl border text-xs font-semibold ${
+                      userProfile.monitoringMethod === m
+                        ? 'bg-blue-50 border-blue-600 text-blue-700'
+                        : 'bg-white border-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">Glucose Target Unit</h2>
+            <p className="text-xs text-slate-500">Choose the standard unit used by your clinic and laboratory.</p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              {['mg/dL', 'mmol/L'].map(unit => (
+                <button
+                  key={unit}
+                  type="button"
+                  onClick={() => setUserProfile({ ...userProfile, units: unit })}
+                  className={`p-4 rounded-2xl border text-center transition ${
+                    userProfile.units === unit
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="text-lg font-black">{unit}</div>
+                  <div className={`text-[10px] mt-1 ${userProfile.units === unit ? 'text-blue-100' : 'text-slate-400'}`}>
+                    {unit === 'mg/dL' ? 'Standard in US / Asia' : 'Standard in UK / Europe'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">Your Primary Focus</h2>
+            <p className="text-xs text-slate-500">Select what matters most right now to guide your daily plan.</p>
+
+            <div className="space-y-2 pt-2">
+              {[
+                'Understand post-meal glucose patterns',
+                'Build a gentle 15-minute walking habit',
+                'Follow the Plate Method for meals',
+                'Prevent hypoglycemia & stay safe',
+                'Organize questions for my doctor'
+              ].map(g => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setUserProfile({ ...userProfile, primaryGoal: g })}
+                  className={`w-full text-left p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-between ${
+                    userProfile.primaryGoal === g
+                      ? 'bg-blue-50 border-blue-600 text-blue-900'
+                      : 'bg-white border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <span>{g}</span>
+                  {userProfile.primaryGoal === g && <Check className="w-4 h-4 text-blue-600" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="space-y-4 text-center">
+            <div className="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
+              <Sparkles className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Ready to Personalize</h2>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              We have compiled your personal self-management parameters following the ADA 2026 Standards of Care.
+            </p>
+
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 text-left text-xs space-y-2">
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-400">Diagnosis</span>
+                <span className="font-bold text-slate-800 capitalize">{userProfile.diabetesType}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-400">Display Units</span>
+                <span className="font-bold text-slate-800">{userProfile.units}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-400">Insulin Status</span>
+                <span className="font-bold text-slate-800">{userProfile.usesInsulin ? 'Active Insulin' : 'Non-Insulin'}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Nav */}
+      <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+        {step > 1 && (
+          <button
+            type="button"
+            onClick={() => setStep(step - 1)}
+            className="px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Back
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            if (step < 5) setStep(step + 1);
+            else onComplete();
+          }}
+          className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-blue-500/25 transition"
+        >
+          {step < 5 ? 'Continue' : 'Generate My Companion Plan'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AllSetScreen({ userProfile, onContinue }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onContinue();
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, [onContinue]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="space-y-6 max-w-sm animate-in fade-in zoom-in duration-500">
+        
+        {/* Animated Checkmark Circle */}
+        <div className="relative mx-auto w-24 h-24">
+          <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border-2 border-white/40 shadow-2xl animate-pulse">
+            <div className="w-16 h-16 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-lg">
+              <Check className="w-10 h-10 stroke-[3]" />
+            </div>
+          </div>
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-400"></span>
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <span className="text-xs uppercase tracking-widest text-blue-200 font-bold">Configuration Complete</span>
+          <h1 className="text-3xl font-black tracking-tight">You're All Set!</h1>
+          <p className="text-xs text-blue-100/90 leading-relaxed">
+            Welcome, {userProfile.name}. Your personalized diabetes companion is prepared and ready.
+          </p>
+        </div>
+
+        {/* Highlight cards */}
+        <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-left text-xs space-y-2">
+          <div className="flex items-center gap-2 text-white">
+            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+            <span>Target range configured (70–140 {userProfile.units})</span>
+          </div>
+          <div className="flex items-center gap-2 text-white">
+            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+            <span>Care plan synced with doctor protocols</span>
+          </div>
+          <div className="flex items-center gap-2 text-white">
+            <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+            <span>Rule of 15 hypoglycemia safety active</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onContinue}
+          className="w-full py-3.5 bg-white text-blue-600 font-extrabold rounded-2xl text-xs shadow-xl hover:bg-blue-50 transition flex items-center justify-center gap-1.5"
+        >
+          Open My Dashboard <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 }
 
 function HomeScreen({
   userProfile,
   recentGlucose,
-  tirStats,
+  glucoseLogs,
+  vitals,
   dailyTasks,
-  completedTasksCount,
-  totalTasksCount,
+  completedTasks,
+  totalTasks,
   taskProgressPct,
   medications,
+  isDarkMode,
   onToggleTask,
   onToggleMed,
   onOpenLog,
+  onOpenReport,
+  onOpenProfile,
   onNavigate
 }) {
-  const isTargetGood = recentGlucose.value >= 70 && recentGlucose.value <= 140;
+  const isTargetNormal = recentGlucose.value >= 70 && recentGlucose.value <= 140;
 
   return (
     <div className="p-4 space-y-4">
-      {/* Personalized Greeting */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-xs text-slate-500 font-medium block">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-          </span>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-            Good morning, {userProfile.name}
-          </h1>
-        </div>
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-full text-amber-800 text-xs font-semibold">
-          <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-          <span>4-Day Consistency</span>
-        </div>
-      </div>
-
-      {/* Hero Glucose Status Card */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-lg relative overflow-hidden">
-        <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
-              <Clock className="w-3.5 h-3.5 text-teal-400" />
-              <span>Latest Glucose • {recentGlucose.context}</span>
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight">{recentGlucose.value}</span>
-              <span className="text-sm font-medium text-slate-300">{userProfile.units}</span>
-              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ml-1 ${
-                isTargetGood ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-              }`}>
-                {isTargetGood ? 'In Your Target' : 'Check Meal Notes'}
-              </span>
-            </div>
-          </div>
+      
+      {/* Top Header: Brand & Search bar (CareSync Style) */}
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => onOpenLog('glucose')}
-            className="p-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1 shadow-sm transition"
+            onClick={onOpenProfile}
+            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white dark:ring-slate-800"
           >
-            <Plus className="w-3.5 h-3.5" /> Log
+            {userProfile.name.split(' ').map(n => n[0]).join('')}
           </button>
+          <div>
+            <div className="text-[11px] font-medium text-slate-400">Welcome Back,</div>
+            <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+              {userProfile.name}
+            </h1>
+          </div>
         </div>
 
-        {/* Mini 7-Day Sparkline / TIR Bar */}
-        <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-[11px]">7-Day TIR:</span>
-            <span className="font-bold text-teal-300">{tirStats.inRange}% in range</span>
-          </div>
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => onNavigate('insights')}
-            className="text-[11px] text-teal-300 hover:text-white flex items-center gap-0.5"
+            className="p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 relative shadow-xs"
           >
-            View Trend <ChevronRight className="w-3 h-3" />
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full" />
           </button>
         </div>
       </div>
 
-      {/* Today's Plan Progress */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight">Today's Daily Plan</h2>
-            <p className="text-[11px] text-slate-500">Achievable steps aligned with your care priorities</p>
-          </div>
-          <div className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
-            {completedTasksCount} of {totalTasksCount} done
-          </div>
-        </div>
+      {/* Search Input Bar (CareSync Design) */}
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search readings, doctors, medications..."
+          className="w-full py-2.5 pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+      </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-          <div
-            className="bg-teal-600 h-full rounded-full transition-all duration-500"
-            style={{ width: `${taskProgressPct}%` }}
-          />
-        </div>
-
-        {/* Task List */}
-        <div className="space-y-1.5 pt-1">
-          {dailyTasks.map(task => (
-            <div
-              key={task.id}
-              onClick={() => onToggleTask(task.id)}
-              className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                task.completed
-                  ? 'bg-slate-50/80 border-slate-200 text-slate-400'
-                  : 'bg-white border-slate-200 text-slate-800 hover:border-teal-300'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 text-xs font-medium">
-                <div className={`w-4 h-4 rounded-md flex items-center justify-center border ${
-                  task.completed ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-300 bg-white'
-                }`}>
-                  {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
-                </div>
-                <span className={task.completed ? 'line-through text-slate-400' : 'text-slate-800'}>
-                  {task.title}
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 capitalize">{task.category}</span>
+      {/* Upcoming Doctor Visit Banner Card (Medica & CareSync Inspired) */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-3xl p-4 shadow-lg shadow-blue-500/15 relative overflow-hidden">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-100 bg-white/15 px-2.5 py-0.5 rounded-full">
+              Upcoming Visit in 3 Days
+            </span>
+            <h2 className="text-sm font-black pt-1">{userProfile.nextAppointment.doctor}</h2>
+            <p className="text-xs text-blue-100">{userProfile.nextAppointment.specialty}</p>
+            <div className="flex items-center gap-2 text-[11px] text-blue-100/90 pt-1">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{userProfile.nextAppointment.date} • {userProfile.nextAppointment.time}</span>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Smart Attention & Insights Card */}
-      <div className="p-3.5 bg-sky-50 border border-sky-100 rounded-2xl flex items-start gap-3">
-        <Sparkles className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="text-xs font-bold text-sky-900">Pattern Insight from Your Logs</div>
-          <p className="text-[11px] text-sky-800 leading-relaxed">
-            Your afternoon glucose was 24 mg/dL lower on days when a 15-minute walk was recorded after lunch. Keep up the gentle movement!
-          </p>
-        </div>
-      </div>
-
-      {/* Quick Medication Adherence Strip */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs">
-        <div className="flex justify-between items-center mb-2.5">
-          <div className="flex items-center gap-1.5">
-            <Pill className="w-4 h-4 text-teal-600" />
-            <h3 className="text-xs font-bold text-slate-900">Medication Routine</h3>
           </div>
+          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-white shadow-inner">
+            <Stethoscope className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="mt-3.5 pt-3 border-t border-white/15 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => onNavigate('track')}
-            className="text-[11px] text-teal-600 font-semibold"
+            onClick={onOpenReport}
+            className="text-xs font-bold text-white flex items-center gap-1 hover:underline"
+          >
+            <FileText className="w-3.5 h-3.5" /> View Doctor Report ➔
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('appointments')}
+            className="text-[11px] bg-white text-blue-700 font-bold px-3 py-1.5 rounded-xl shadow-xs"
           >
             Manage
           </button>
         </div>
-        <div className="space-y-2">
-          {medications.map(med => (
-            <div key={med.id} className="flex items-center justify-between text-xs p-2 bg-slate-50 rounded-xl border border-slate-100">
-              <div>
-                <span className="font-semibold text-slate-800">{med.name}</span>
-                <span className="text-slate-500 ml-1.5">({med.dose})</span>
-                <span className="block text-[10px] text-slate-400">{med.timing}</span>
+      </div>
+
+      {/* Health Overview Metric Badges (CareSync Style) */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-[10px] font-semibold">Blood Sugar</span>
+            <Activity className="w-3.5 h-3.5 text-blue-600" />
+          </div>
+          <div className="text-base font-black text-slate-900 dark:text-white">
+            {recentGlucose.value}
+          </div>
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md mt-0.5 inline-block ${
+            isTargetNormal ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-amber-50 text-amber-700'
+          }`}>
+            {isTargetNormal ? 'In Target' : 'Check'}
+          </span>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-[10px] font-semibold">Blood Pressure</span>
+            <Heart className="w-3.5 h-3.5 text-rose-500" />
+          </div>
+          <div className="text-base font-black text-slate-900 dark:text-white">
+            {vitals.bpSystolic}/{vitals.bpDiastolic}
+          </div>
+          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">
+            Normal mmHg
+          </span>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-[10px] font-semibold">Latest A1C</span>
+            <Award className="w-3.5 h-3.5 text-indigo-500" />
+          </div>
+          <div className="text-base font-black text-slate-900 dark:text-white">
+            {vitals.a1c}
+          </div>
+          <span className="text-[9px] text-slate-400 block mt-0.5">
+            {vitals.a1cDate}
+          </span>
+        </div>
+      </div>
+
+      {/* 4-Card Service Grid (CareSync Inspired) */}
+      <div className="space-y-2">
+        <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 px-1">
+          Quick Health Actions
+        </h3>
+        <div className="grid grid-cols-4 gap-2.5">
+          {[
+            { label: 'Log Reading', icon: <Plus className="w-5 h-5" />, action: onOpenLog, color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+            { label: 'My Doctor', icon: <Stethoscope className="w-5 h-5" />, action: () => onNavigate('appointments'), color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
+            { label: 'Reports', icon: <FileText className="w-5 h-5" />, action: onOpenReport, color: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
+            { label: 'Plate Guide', icon: <Utensils className="w-5 h-5" />, action: () => onNavigate('track'), color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400' }
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={item.action}
+              className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 p-3 rounded-2xl flex flex-col items-center justify-center text-center shadow-xs hover:border-blue-300 transition"
+            >
+              <div className={`p-2.5 rounded-xl ${item.color} mb-1.5`}>
+                {item.icon}
               </div>
-              <button
-                type="button"
-                onClick={() => onToggleMed(med.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                  med.taken
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                {med.taken ? 'Taken ✓' : 'Mark Taken'}
-              </button>
+              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 leading-tight">
+                {item.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Today's Care Plan Progress Checklist */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              Today's Care Plan
+            </h2>
+            <p className="text-[11px] text-slate-500">Achievable daily steps aligned with ADA standards</p>
+          </div>
+          <span className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-2.5 py-1 rounded-full">
+            {completedTasks} of {totalTasks} done
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+          <div
+            className="bg-blue-600 h-full rounded-full transition-all duration-500"
+            style={{ width: `${taskProgressPct}%` }}
+          />
+        </div>
+
+        {/* Task Items */}
+        <div className="space-y-2 pt-1">
+          {dailyTasks.slice(0, 4).map(task => (
+            <div
+              key={task.id}
+              onClick={() => onToggleTask(task.id)}
+              className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition ${
+                task.completed
+                  ? 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700 text-slate-400'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className={`w-5 h-5 rounded-lg flex items-center justify-center border ${
+                  task.completed
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
+                }`}>
+                  {task.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </div>
+                <span className={task.completed ? 'line-through text-slate-400' : ''}>
+                  {task.title}
+                </span>
+              </div>
+              <span className="text-[9px] text-slate-400 capitalize">{task.category}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Preventive Foot Check Reminder */}
-      <div className="p-3 bg-amber-50/80 border border-amber-200/70 rounded-2xl flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
-            <Eye className="w-4 h-4" />
-          </div>
+      {/* Glucose Trend Graph (7-Day Bar & Line Visualizer) */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
+        <div className="flex justify-between items-center">
           <div>
-            <div className="text-xs font-bold text-slate-900">Daily 60-Second Foot Check</div>
-            <div className="text-[10px] text-slate-500">Inspect for cuts, redness, or pressure marks</div>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => onNavigate('track')}
-          className="text-xs font-semibold px-2.5 py-1 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
-        >
-          Check
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function TrackCenterScreen({
-  userProfile,
-  selectedSubTab,
-  onChangeSubTab,
-  glucoseLogs,
-  medications,
-  meals,
-  activities,
-  vitals,
-  footCheckDone,
-  onToggleFootCheck,
-  onToggleMed,
-  onOpenLog
-}) {
-  return (
-    <div className="p-4 space-y-4">
-      {/* Sub-tab Pill Switcher */}
-      <div className="flex space-x-1.5 p-1 bg-slate-200/80 rounded-xl overflow-x-auto text-xs font-medium scrollbar-none">
-        {[
-          { id: 'glucose', label: 'Glucose' },
-          { id: 'food', label: 'Meals' },
-          { id: 'meds', label: 'Meds' },
-          { id: 'activity', label: 'Activity' },
-          { id: 'vitals', label: 'Vitals & Care' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onChangeSubTab(tab.id)}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
-              selectedSubTab === tab.id
-                ? 'bg-white text-slate-900 font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Sub-tab 1: Glucose Logs & CGM metrics */}
-      {selectedSubTab === 'glucose' && (
-        <div className="space-y-4">
-          {/* Header Action */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Glucose History</h2>
-              <p className="text-[11px] text-slate-500">Target Range: 70–140 {userProfile.units}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onOpenLog('glucose')}
-              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" /> Record Reading
-            </button>
-          </div>
-
-          {/* Time In Range Visual Strip */}
-          <div className="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-slate-700">
-              <span>Time in Range (7 Days)</span>
-              <span className="text-teal-700 font-bold">82% In Target</span>
-            </div>
-            <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-100">
-              <div style={{ width: '4%' }} className="bg-amber-400" title="Low (<70)" />
-              <div style={{ width: '82%' }} className="bg-emerald-500" title="In Range (70-140)" />
-              <div style={{ width: '14%' }} className="bg-rose-400" title="High (>140)" />
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-500 pt-1">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" /> Low: 4%</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> In Range: 82%</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-400" /> High: 14%</span>
-            </div>
-          </div>
-
-          {/* Reading Cards */}
-          <div className="space-y-2">
-            {glucoseLogs.map(log => {
-              const isNormal = log.value >= 70 && log.value <= 140;
-              const isLow = log.value < 70;
-              return (
-                <div key={log.id} className="p-3 bg-white rounded-xl border border-slate-200/90 flex items-center justify-between shadow-2xs">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-xl flex flex-col items-center justify-center font-bold ${
-                      isLow ? 'bg-amber-100 text-amber-800' : isNormal ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
-                    }`}>
-                      <span className="text-sm leading-none">{log.value}</span>
-                      <span className="text-[9px] font-normal opacity-80">{log.unit}</span>
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-800">{log.context}</div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                        <span>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        {log.notes && <span>• {log.notes}</span>}
-                      </div>
-                      {log.tags && log.tags.length > 0 && (
-                        <div className="flex gap-1 mt-1">
-                          {log.tags.map((tg, idx) => (
-                            <span key={idx} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px]">
-                              {tg}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    isLow ? 'bg-amber-100 text-amber-800' : isNormal ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                  }`}>
-                    {isLow ? 'Low (<70)' : isNormal ? 'In Target' : 'Elevated'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Sub-tab 2: Food & Plate Method */}
-      {selectedSubTab === 'food' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Visual Plate & Meal Log</h2>
-              <p className="text-[11px] text-slate-500">Balance carbs with protein & non-starchy fiber</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onOpenLog('food')}
-              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" /> Log Meal
-            </button>
-          </div>
-
-          {/* Interactive Plate Method Visualizer */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-            <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Utensils className="w-4 h-4 text-teal-600" /> ADA Plate Proportion Guide
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+              7-Day Glucose Trend
             </h3>
-            
-            {/* Visual Plate Representation */}
-            <div className="w-48 h-48 mx-auto rounded-full border-4 border-slate-200 relative overflow-hidden shadow-inner flex flex-col">
-              {/* Half Non-Starchy Vegetables */}
-              <div className="h-1/2 bg-emerald-100 border-b-2 border-slate-200 flex flex-col items-center justify-center p-2 text-center">
-                <span className="text-[11px] font-bold text-emerald-900">½ Vegetables</span>
-                <span className="text-[9px] text-emerald-700">Spinach, Cucumber, Salad, Broccoli</span>
-              </div>
-              {/* Lower Half Split: Quarter Carbs, Quarter Protein */}
-              <div className="h-1/2 flex">
-                <div className="w-1/2 bg-amber-100 border-r-2 border-slate-200 flex flex-col items-center justify-center p-1 text-center">
-                  <span className="text-[10px] font-bold text-amber-900">¼ Carbs</span>
-                  <span className="text-[8px] text-amber-700">1 Roti, Daal, Brown Rice</span>
-                </div>
-                <div className="w-1/2 bg-sky-100 flex flex-col items-center justify-center p-1 text-center">
-                  <span className="text-[10px] font-bold text-sky-900">¼ Protein</span>
-                  <span className="text-[8px] text-sky-700">Eggs, Fish, Chicken, Tofu</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-500 text-center">
-              Filling half your plate with leafy greens slows carbohydrate digestion without extreme restriction.
-            </p>
+            <p className="text-[10px] text-slate-400">Target Range: 70–140 {userProfile.units}</p>
           </div>
-
-          {/* Regional Pakistani & Global Food Search Context */}
-          <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80 space-y-2">
-            <h4 className="text-xs font-bold text-slate-800">Regional Food Guidance (No Shaming)</h4>
-            <div className="space-y-1.5">
-              {REGIONAL_FOOD_DB.slice(0, 4).map((f, idx) => (
-                <div key={idx} className="p-2 bg-white rounded-lg border border-slate-100 text-xs">
-                  <div className="font-semibold text-slate-800">{f.name}</div>
-                  <div className="text-[10px] text-teal-700 font-medium">{f.carbLevel}</div>
-                  <div className="text-[10px] text-slate-500">{f.note}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            Avg: 118 {userProfile.units}
+          </span>
         </div>
-      )}
 
-      {/* Sub-tab 3: Medications */}
-      {selectedSubTab === 'meds' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Medication Schedule</h2>
-              <p className="text-[11px] text-slate-500">Record adherence according to your doctor's prescription</p>
-            </div>
-          </div>
-
-          <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 flex gap-2">
-            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <span>Never change prescription dosages or insulin units on your own. Discuss schedule questions with Dr. Mahmood.</span>
-          </div>
-
-          <div className="space-y-2.5">
-            {medications.map(med => (
-              <div key={med.id} className="p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
-                <div>
-                  <div className="text-sm font-bold text-slate-900">{med.name}</div>
-                  <div className="text-xs text-teal-700 font-medium">{med.dose} • {med.timing}</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">Prescribed for: {med.prescribedFor}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onToggleMed(med.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                    med.taken
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-teal-600 hover:bg-teal-700 text-white shadow-xs'
-                  }`}
-                >
-                  {med.taken ? 'Taken ✓' : 'Mark Taken'}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Sub-tab 4: Activity & Exercise */}
-      {selectedSubTab === 'activity' && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Activity Tracker</h2>
-              <p className="text-[11px] text-slate-500">Weekly Goal: 150 minutes moderate movement</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onOpenLog('activity')}
-              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" /> Record Activity
-            </button>
-          </div>
-
-          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex gap-2">
-            <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-            <span>
-              Movement helps muscles clear glucose independently of insulin. Stay well-hydrated and carry fast-acting glucose if taking medications with hypoglycemia risk.
+        {/* Visual Graph with Target Band */}
+        <div className="w-full h-32 bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-2.5 relative flex items-end justify-between border border-slate-100 dark:border-slate-800">
+          {/* Target Range Band Overlay */}
+          <div className="absolute top-[28%] bottom-[32%] left-0 right-0 bg-emerald-500/10 border-y border-emerald-500/20 pointer-events-none flex items-center justify-end px-2">
+            <span className="text-[8px] font-bold text-emerald-700 dark:text-emerald-400 bg-white/80 dark:bg-slate-800 px-1 rounded">
+              Target 70–140
             </span>
           </div>
 
-          <div className="space-y-2">
-            {activities.map(act => (
-              <div key={act.id} className="p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-900">{act.type}</div>
-                  <div className="text-[11px] text-slate-500">{act.duration} minutes • Intensity: {act.intensity}</div>
-                  {act.preGlucose && act.postGlucose && (
-                    <div className="text-[10px] text-teal-700 mt-1 font-medium">
-                      Pre: {act.preGlucose} → Post: {act.postGlucose} mg/dL (Effect: -{act.preGlucose - act.postGlucose})
-                    </div>
-                  )}
-                </div>
-                <div className="text-right text-xs font-bold text-slate-700">
-                  {act.duration} min
-                </div>
+          {[112, 104, 138, 99, 128, 118, 104].map((v, idx) => {
+            const height = Math.min(100, Math.max(25, ((v - 60) / 140) * 100));
+            const inRange = v >= 70 && v <= 140;
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center gap-1 z-10">
+                <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300">{v}</span>
+                <div
+                  style={{ height: `${height}%` }}
+                  className={`w-4 rounded-t-lg transition-all ${
+                    inRange ? 'bg-blue-600' : 'bg-amber-400'
+                  }`}
+                />
+                <span className="text-[8px] text-slate-400 font-medium">Day {idx + 1}</span>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Time In Range Segmented Strip */}
+        <div className="pt-1">
+          <div className="flex justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <span>Time in Range</span>
+            <span className="text-emerald-600 font-black">82% In Target</span>
+          </div>
+          <div className="h-2.5 w-full flex rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700">
+            <div style={{ width: '4%' }} className="bg-amber-400" title="Low <70" />
+            <div style={{ width: '82%' }} className="bg-blue-600" title="In Range 70-140" />
+            <div style={{ width: '14%' }} className="bg-rose-400" title="High >140" />
           </div>
         </div>
-      )}
-
-      {/* Sub-tab 5: Vitals, Labs & Preventive Screening */}
-      {selectedSubTab === 'vitals' && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Vitals, Labs & Care Screenings</h2>
-            <p className="text-[11px] text-slate-500">Long-term benchmarks recommended by the ADA 2026 Standards</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[11px] text-slate-500 font-medium">Latest A1C</span>
-              <div className="text-xl font-black text-slate-900">{vitals.a1c}</div>
-              <span className="text-[10px] text-slate-400 block">{vitals.a1cDate}</span>
-            </div>
-
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[11px] text-slate-500 font-medium">Blood Pressure</span>
-              <div className="text-xl font-black text-slate-900">{vitals.bpSystolic}/{vitals.bpDiastolic}</div>
-              <span className="text-[10px] text-emerald-600 font-semibold block">Clinician Target: &lt;130/80</span>
-            </div>
-
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[11px] text-slate-500 font-medium">Body Weight</span>
-              <div className="text-xl font-black text-slate-900">{vitals.weightKg} kg</div>
-              <span className="text-[10px] text-slate-400 block">Steady over 30 days</span>
-            </div>
-
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[11px] text-slate-500 font-medium">Kidney eGFR</span>
-              <div className="text-xl font-black text-slate-900">{vitals.egfr}</div>
-              <span className="text-[10px] text-emerald-600 font-semibold block">Normal filtration</span>
-            </div>
-          </div>
-
-          {/* Preventive Foot Check Card */}
-          <div className="p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <div className="text-xs font-bold text-slate-900">Today's Foot Inspection</div>
-              <p className="text-[10px] text-slate-500">Check for numbness, cuts, or calluses</p>
-            </div>
-            <button
-              type="button"
-              onClick={onToggleFootCheck}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
-                footCheckDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-teal-600 text-white'
-              }`}
-            >
-              {footCheckDone ? 'Completed ✓' : 'Mark Done'}
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
 
-function InsightsScreen({ glucoseLogs, tirStats, userProfile, medications, activities, onOpenCareReport }) {
-  const [timeRange, setTimeRange] = useState('7D'); // '7D' | '14D' | '30D'
+function TrackScreen({ userProfile, glucoseLogs, medications, vitals, isDarkMode, onOpenLog, onToggleMed }) {
+  const [subTab, setSubTab] = useState('glucose'); // 'glucose' | 'plate' | 'meds' | 'vitals'
 
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-base font-extrabold text-slate-900">Trends & Insights</h1>
-          <p className="text-xs text-slate-500">Descriptive patterns to review with your clinician</p>
+          <h2 className="text-base font-black text-slate-900 dark:text-white">Health Tracker</h2>
+          <p className="text-xs text-slate-500">Record and monitor all vital diabetes parameters</p>
         </div>
         <button
           type="button"
-          onClick={onOpenCareReport}
-          className="px-3 py-1.5 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-xs"
+          onClick={onOpenLog}
+          className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold flex items-center gap-1 shadow-md shadow-blue-500/20"
         >
-          <FileText className="w-3.5 h-3.5" /> Doctor Report
+          <Plus className="w-4 h-4" /> Log Entry
         </button>
       </div>
 
-      {/* Time Filter Buttons */}
-      <div className="flex space-x-2 bg-slate-200/80 p-1 rounded-xl text-xs font-medium">
-        {['7D', '14D', '30D'].map(tr => (
+      {/* Pill Switcher */}
+      <div className="flex bg-slate-200/80 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold overflow-x-auto scrollbar-none">
+        {[
+          { id: 'glucose', label: 'Glucose' },
+          { id: 'plate', label: 'Plate Method' },
+          { id: 'meds', label: 'Medications' },
+          { id: 'vitals', label: 'Vitals & Labs' }
+        ].map(t => (
           <button
-            key={tr}
+            key={t.id}
             type="button"
-            onClick={() => setTimeRange(tr)}
-            className={`flex-1 py-1.5 rounded-lg transition-all ${
-              timeRange === tr ? 'bg-white font-bold text-slate-900 shadow-xs' : 'text-slate-600'
+            onClick={() => setSubTab(t.id)}
+            className={`flex-1 py-2 rounded-xl whitespace-nowrap transition ${
+              subTab === t.id
+                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400'
             }`}
           >
-            {tr === '7D' ? '7 Days' : tr === '14D' ? '14 Days' : '30 Days'}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {/* Descriptive Trend Chart Visual */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-        <div className="flex justify-between items-center text-xs">
-          <span className="font-bold text-slate-800">Average Glucose</span>
-          <span className="text-teal-700 font-extrabold text-sm">{tirStats.avg} {userProfile.units}</span>
-        </div>
-
-        {/* SVG Glucose Trend Line with Target Range Band */}
-        <div className="w-full h-36 bg-slate-50 rounded-xl p-2 relative flex items-end justify-between border border-slate-100">
-          {/* Target Zone Highlight */}
-          <div className="absolute top-[30%] bottom-[30%] left-0 right-0 bg-emerald-500/10 border-y border-emerald-500/20 pointer-events-none flex items-center justify-end px-2">
-            <span className="text-[9px] font-bold text-emerald-800 bg-white/80 px-1 rounded">Target 70–140</span>
-          </div>
-
-          {/* Simple Simulated Bar Chart of Recent Daily Averages */}
-          {[112, 104, 138, 98, 126, 118, 108].map((val, idx) => {
-            const heightPct = Math.min(100, Math.max(20, ((val - 60) / 140) * 100));
-            const inRange = val >= 70 && val <= 140;
+      {/* Subtab 1: Glucose */}
+      {subTab === 'glucose' && (
+        <div className="space-y-2.5">
+          {glucoseLogs.map(log => {
+            const isNormal = log.value >= 70 && log.value <= 140;
+            const isLow = log.value < 70;
             return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1 z-10">
-                <span className="text-[9px] font-semibold text-slate-600">{val}</span>
-                <div
-                  style={{ height: `${heightPct}%` }}
-                  className={`w-4 rounded-t-md transition-all ${
-                    inRange ? 'bg-teal-600' : 'bg-amber-400'
-                  }`}
-                />
-                <span className="text-[8px] text-slate-400">D{idx + 1}</span>
+              <div
+                key={log.id}
+                className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 flex items-center justify-between shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold ${
+                    isLow ? 'bg-amber-100 text-amber-800' : isNormal ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-rose-50 text-rose-700'
+                  }`}>
+                    <span className="text-sm leading-none font-black">{log.value}</span>
+                    <span className="text-[9px] opacity-75">{log.unit}</span>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-white">{log.context}</div>
+                    <div className="text-[10px] text-slate-400">
+                      {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {log.notes && ` • ${log.notes}`}
+                    </div>
+                  </div>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isLow ? 'bg-amber-100 text-amber-800' : isNormal ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-rose-100 text-rose-800'
+                }`}>
+                  {isLow ? 'Low (<70)' : isNormal ? 'In Target' : 'Elevated'}
+                </span>
               </div>
             );
           })}
         </div>
-      </div>
+      )}
 
-      {/* Descriptive Observation Cards (No shaming, non-causal) */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Observed Patterns</h3>
-        
-        <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Fasting Stability</span>
+      {/* Subtab 2: Plate Method Visualizer */}
+      {subTab === 'plate' && (
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 space-y-4">
+          <div className="text-center space-y-1">
+            <h3 className="text-xs font-black uppercase text-blue-600">ADA Plate Method</h3>
+            <p className="text-xs text-slate-500">Balance meals to flatten post-meal glucose spikes</p>
           </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Your morning readings over the past 7 days stayed between 98 and 108 {userProfile.units}. This demonstrates consistent overnight stability.
+
+          <div className="w-48 h-48 mx-auto rounded-full border-4 border-slate-200 dark:border-slate-700 overflow-hidden shadow-inner flex flex-col">
+            <div className="h-1/2 bg-emerald-100 dark:bg-emerald-900/40 flex flex-col items-center justify-center p-2 text-center border-b-2 border-slate-200 dark:border-slate-700">
+              <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">½ Non-Starchy Veggies</span>
+              <span className="text-[9px] text-emerald-700 dark:text-emerald-400">Spinach, Cucumber, Salad</span>
+            </div>
+            <div className="h-1/2 flex">
+              <div className="w-1/2 bg-amber-100 dark:bg-amber-900/40 border-r-2 border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-1 text-center">
+                <span className="text-[10px] font-bold text-amber-900 dark:text-amber-200">¼ Quality Carbs</span>
+                <span className="text-[8px] text-amber-700 dark:text-amber-400">1 Roti, Daal</span>
+              </div>
+              <div className="w-1/2 bg-blue-100 dark:bg-blue-900/40 flex flex-col items-center justify-center p-1 text-center">
+                <span className="text-[10px] font-bold text-blue-900 dark:text-blue-200">¼ Lean Protein</span>
+                <span className="text-[8px] text-blue-700 dark:text-blue-400">Fish, Eggs, Chicken</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+            Filling half the plate with greens slows digestion and cushions glucose rises without strict deprivation.
           </p>
         </div>
+      )}
 
-        <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-            <Info className="w-4 h-4 text-amber-600" />
-            <span>Post-Dinner Variation</span>
-          </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Post-dinner readings exhibited more variability on days with later dinner times. Consider discussing this schedule timing with your dietitian.
-          </p>
+      {/* Subtab 3: Medications */}
+      {subTab === 'meds' && (
+        <div className="space-y-2.5">
+          {medications.map(m => (
+            <div
+              key={m.id}
+              className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 flex items-center justify-between shadow-xs"
+            >
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">{m.name}</div>
+                <div className="text-[11px] text-blue-600 font-semibold">{m.dose} • {m.timing}</div>
+                <div className="text-[10px] text-slate-400">For: {m.prescribedFor}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onToggleMed(m.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  m.taken
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-300'
+                    : 'bg-blue-600 text-white shadow-xs'
+                }`}
+              >
+                {m.taken ? 'Taken ✓' : 'Mark Taken'}
+              </button>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
-  );
-}
+      )}
 
-function LearnAcademyScreen({ userProfile, lessons, selectedCategory, onSelectCategory, onAskAssistant }) {
-  const [selectedLesson, setSelectedLesson] = useState(null);
-
-  const categories = ['All', 'Foundations', 'Nutrition', 'Safety', 'Activity', 'Preventive Care'];
-
-  const filteredLessons = lessons.filter(l => {
-    if (selectedCategory !== 'All' && l.category !== selectedCategory) return false;
-    return l.forTypes.includes(userProfile.diabetesType);
-  });
-
-  return (
-    <div className="p-4 space-y-4">
-      <div>
-        <h1 className="text-base font-extrabold text-slate-900">Diabetes Academy</h1>
-        <p className="text-xs text-slate-500">Short, evidence-based lessons citing ADA & NIDDK guidelines</p>
-      </div>
-
-      {/* Category Horizontal Filter */}
-      <div className="flex space-x-1.5 overflow-x-auto pb-1 text-xs font-medium scrollbar-none">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => onSelectCategory(cat)}
-            className={`px-3 py-1.5 rounded-full whitespace-nowrap transition ${
-              selectedCategory === cat
-                ? 'bg-teal-600 text-white font-bold'
-                : 'bg-slate-200/80 text-slate-700 hover:bg-slate-300'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Lesson List */}
-      <div className="space-y-2.5">
-        {filteredLessons.map(lesson => (
-          <div
-            key={lesson.id}
-            onClick={() => setSelectedLesson(lesson)}
-            className="p-3.5 bg-white rounded-2xl border border-slate-200 hover:border-teal-400 cursor-pointer transition shadow-2xs space-y-1.5"
-          >
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="font-bold text-teal-700 uppercase tracking-wider">{lesson.category}</span>
-              <span className="text-slate-400">{lesson.readTime}</span>
-            </div>
-            <h3 className="text-xs font-bold text-slate-900 leading-snug">{lesson.title}</h3>
-            <p className="text-[11px] text-slate-500 line-clamp-2">{lesson.summary}</p>
+      {/* Subtab 4: Vitals & Preventive Screening */}
+      {subTab === 'vitals' && (
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase font-bold">Latest A1C</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white">{vitals.a1c}</div>
+            <span className="text-[10px] text-slate-400">{vitals.a1cDate}</span>
           </div>
-        ))}
-      </div>
-
-      {/* Lesson Reader Modal */}
-      {selectedLesson && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl">
-            <div className="flex justify-between items-start">
-              <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">
-                {selectedLesson.category}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedLesson(null)}
-                className="p-1 text-slate-400 hover:text-slate-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <h2 className="text-base font-bold text-slate-900 leading-snug">{selectedLesson.title}</h2>
-            <p className="text-xs text-slate-600 leading-relaxed">{selectedLesson.summary}</p>
-
-            <div className="p-3 bg-teal-50/80 border border-teal-200/80 rounded-xl space-y-1">
-              <span className="text-[10px] font-bold text-teal-900 uppercase">Key Takeaway</span>
-              <p className="text-xs text-teal-800 leading-relaxed">{selectedLesson.takeaway}</p>
-            </div>
-
-            <div className="text-[10px] text-slate-400 flex items-center gap-1 pt-1">
-              <Shield className="w-3.5 h-3.5 text-slate-400" />
-              <span>Evidence Source: {selectedLesson.source}</span>
-            </div>
-
-            <div className="pt-2 flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const q = `Can you explain more about ${selectedLesson.title}?`;
-                  setSelectedLesson(null);
-                  onAskAssistant(q);
-                }}
-                className="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold"
-              >
-                Ask Assistant About This
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedLesson(null)}
-                className="py-2 px-4 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
-              >
-                Close
-              </button>
-            </div>
+          <div className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase font-bold">Blood Pressure</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white">{vitals.bpSystolic}/{vitals.bpDiastolic}</div>
+            <span className="text-[10px] text-emerald-600 font-bold">Target &lt;130/80</span>
+          </div>
+          <div className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase font-bold">Heart Rate</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white">{vitals.heartRate} bpm</div>
+            <span className="text-[10px] text-slate-400">Resting pulse</span>
+          </div>
+          <div className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase font-bold">Body Weight</span>
+            <div className="text-xl font-black text-slate-900 dark:text-white">{vitals.weightKg} kg</div>
+            <span className="text-[10px] text-slate-400">Steady trend</span>
           </div>
         </div>
       )}
@@ -1737,60 +1649,232 @@ function LearnAcademyScreen({ userProfile, lessons, selectedCategory, onSelectCa
   );
 }
 
-function ChatAssistantScreen({ messages, inputVal, onInputChange, onSend, isLoading, userProfile }) {
-  const messagesEndRef = useRef(null);
+function AppointmentsScreen({ doctors, userProfile, isDarkMode, onOpenReport }) {
+  const [activeSegment, setActiveSegment] = useState('upcoming'); // 'upcoming' | 'completed'
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-base font-black text-slate-900 dark:text-white">Care Team & Appointments</h2>
+          <p className="text-xs text-slate-500">Coordinate with endocrinologists and educators</p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenReport}
+          className="p-2 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-xs font-bold flex items-center gap-1"
+        >
+          <FileText className="w-3.5 h-3.5" /> Visit Prep
+        </button>
+      </div>
+
+      {/* Segment switcher */}
+      <div className="flex bg-slate-200/80 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => setActiveSegment('upcoming')}
+          className={`flex-1 py-2 rounded-xl transition ${
+            activeSegment === 'upcoming' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          Upcoming (1)
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSegment('completed')}
+          className={`flex-1 py-2 rounded-xl transition ${
+            activeSegment === 'completed' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          Top Specialists
+        </button>
+      </div>
+
+      {activeSegment === 'upcoming' ? (
+        <div className="space-y-3">
+          {/* Confirmed Upcoming Visit Card */}
+          <div className="p-4 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                TM
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+                  {userProfile.nextAppointment.doctor}
+                </h3>
+                <p className="text-[11px] text-blue-600 font-medium">{userProfile.nextAppointment.specialty}</p>
+                <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                  <MapPin className="w-3 h-3" /> {userProfile.nextAppointment.location}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-blue-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 text-xs flex justify-between items-center">
+              <div>
+                <span className="text-[10px] text-slate-400 block">Date & Time</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                  {userProfile.nextAppointment.date} • {userProfile.nextAppointment.time}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 rounded-full">
+                Confirmed
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onOpenReport}
+                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-xs"
+              >
+                Prepare Doctor Questions
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-semibold"
+              >
+                Reschedule
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {doctors.map(doc => (
+            <div
+              key={doc.id}
+              className="p-3.5 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-2xl ${doc.color} text-white flex items-center justify-center font-bold text-xs`}>
+                  {doc.avatar}
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{doc.name}</h4>
+                  <div className="text-[10px] text-slate-400">{doc.specialty}</div>
+                  <div className="text-[10px] text-blue-600 font-semibold mt-0.5">
+                    ⭐ {doc.rating} ({doc.reviews} reviews) • {doc.fee}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-xl text-xs font-bold hover:bg-blue-100"
+              >
+                Book
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InsightsScreen({ glucoseLogs, userProfile, isDarkMode, onOpenReport }) {
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-base font-black text-slate-900 dark:text-white">Trends & Analytics</h2>
+          <p className="text-xs text-slate-500">Descriptive patterns to share with your clinician</p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenReport}
+          className="px-3 py-1.5 bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-xs"
+        >
+          Export Report
+        </button>
+      </div>
+
+      {/* Pattern cards */}
+      <div className="space-y-2.5">
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+            <CheckCircle2 className="w-4 h-4" /> Fasting Stability
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Your morning fasting readings stayed consistently between 99 and 108 {userProfile.units} over the past 7 days.
+          </p>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
+            <Sparkles className="w-4 h-4" /> Post-Meal Walking Effect
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Afternoon glucose was approximately 22 mg/dL lower on days where a 15-minute gentle walk was logged after lunch.
+          </p>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-1.5">
+          <div className="flex items-center gap-2 text-xs font-bold text-amber-600">
+            <Info className="w-4 h-4" /> Post-Dinner Variability
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Dinner readings had slight variations on late-meal days. Consider noting dinner meal contents for Dr. Mahmood.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChatScreen({ messages, inputVal, onInputChange, onSend, isLoading, isDarkMode, userProfile }) {
+  const endRef = useRef(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
   const quickPrompts = [
-    "Why is glucose often higher in the morning?",
-    "How does a 15-minute walk help after eating?",
-    "What should I ask my doctor at my next visit?",
-    "Explain what A1C means in simple terms."
+    "Why does morning glucose spike?",
+    "How does walking help after eating?",
+    "Questions to ask my doctor",
+    "What does A1C 6.8% mean?"
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-125px)] bg-slate-50">
-      {/* Assistant Header Info */}
-      <div className="p-3 bg-white border-b border-slate-200/80 flex items-center justify-between">
+    <div className="flex flex-col h-[calc(100vh-130px)]">
+      {/* Header */}
+      <div className="p-3 bg-white dark:bg-slate-800 border-b border-slate-200/80 dark:border-slate-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
             GG
           </div>
           <div>
-            <h2 className="text-xs font-bold text-slate-900">GlucoGuide Assistant</h2>
-            <span className="text-[10px] text-slate-500">Evidence-informed self-management education</span>
+            <h2 className="text-xs font-bold text-slate-900 dark:text-white">GlucoGuide Assistant</h2>
+            <span className="text-[10px] text-slate-400">Evidence-informed self-management educator</span>
           </div>
         </div>
-        <span className="text-[9px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">
+        <span className="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">
           Not a Doctor
         </span>
       </div>
 
-      {/* Messages Scroll Area */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map(msg => (
+        {messages.map(m => (
           <div
-            key={msg.id}
-            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+            key={m.id}
+            className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
           >
             <div
-              className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed ${
-                msg.sender === 'user'
-                  ? 'bg-teal-600 text-white rounded-br-xs shadow-xs'
-                  : msg.isEmergency
-                  ? 'bg-red-50 text-red-900 border border-red-300 rounded-bl-xs shadow-sm font-medium'
-                  : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-2xs'
+              className={`max-w-[85%] p-3.5 rounded-3xl text-xs leading-relaxed ${
+                m.sender === 'user'
+                  ? 'bg-blue-600 text-white rounded-br-xs shadow-sm'
+                  : m.isEmergency
+                  ? 'bg-red-50 text-red-900 border border-red-300 rounded-bl-xs'
+                  : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700 rounded-bl-xs shadow-xs'
               }`}
             >
-              {msg.text}
-
-              {msg.sources && (
-                <div className="mt-2 pt-1.5 border-t border-slate-100 text-[9px] text-slate-400 flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-slate-400" />
-                  <span>Sources: {msg.sources.join(', ')}</span>
+              {m.text}
+              {m.sources && (
+                <div className="mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-700 text-[9px] text-slate-400 flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  <span>Sources: {m.sources.join(', ')}</span>
                 </div>
               )}
             </div>
@@ -1798,43 +1882,43 @@ function ChatAssistantScreen({ messages, inputVal, onInputChange, onSend, isLoad
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 p-2">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-600" />
-            <span>Consulting clinical education guidelines...</span>
+          <div className="flex items-center gap-2 text-xs text-slate-400 p-2">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
+            <span>Consulting clinical diabetes guidelines...</span>
           </div>
         )}
-        <div ref={messagesEndRef} />
+        <div ref={endRef} />
       </div>
 
-      {/* Preset Quick Inquiries */}
-      <div className="px-3 py-1.5 bg-white border-t border-slate-100 flex space-x-1.5 overflow-x-auto scrollbar-none">
-        {quickPrompts.map((qp, idx) => (
+      {/* Quick Inquiries */}
+      <div className="px-3 py-1.5 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 flex space-x-1.5 overflow-x-auto scrollbar-none">
+        {quickPrompts.map((qp, i) => (
           <button
-            key={idx}
+            key={i}
             type="button"
             onClick={() => onSend(qp)}
-            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] whitespace-nowrap transition font-medium"
+            className="px-3 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-full text-[10px] whitespace-nowrap font-medium"
           >
             {qp}
           </button>
         ))}
       </div>
 
-      {/* Input Bar */}
-      <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+      {/* Input */}
+      <div className="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2">
         <input
           type="text"
           value={inputVal}
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onSend()}
-          placeholder="Ask about routines, carbs, or doctor questions..."
-          className="flex-1 px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          placeholder="Ask about carbs, routines, or appointment questions..."
+          className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
         />
         <button
           type="button"
           onClick={() => onSend()}
           disabled={!inputVal.trim() || isLoading}
-          className="p-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white rounded-xl transition"
+          className="p-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl shadow-sm"
         >
           <Send className="w-4 h-4" />
         </button>
@@ -1843,250 +1927,126 @@ function ChatAssistantScreen({ messages, inputVal, onInputChange, onSend, isLoad
   );
 }
 
-function QuickLogModal({ units, onClose, onAddGlucose, onAddMeal, onAddActivity }) {
-  const [logTab, setLogTab] = useState('glucose'); // 'glucose' | 'meal' | 'activity'
-
-  // Glucose inputs
-  const [glucoseVal, setGlucoseVal] = useState('115');
+function QuickLogModal({ units, isDarkMode, onClose, onAddGlucose }) {
+  const [val, setVal] = useState('110');
   const [context, setContext] = useState('After Lunch');
   const [notes, setNotes] = useState('');
 
-  // Meal inputs
-  const [mealName, setMealName] = useState('');
-  const [mealType, setMealType] = useState('Lunch');
-
-  // Activity inputs
-  const [actType, setActType] = useState('Walking');
-  const [duration, setDuration] = useState('15');
-
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+      <div className={`rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl border ${
+        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+      }`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-sm font-bold text-slate-900">Record Health Entry</h2>
-          <button type="button" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700">
+          <h3 className="text-sm font-bold">Record Glucose Reading</h3>
+          <button type="button" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab switch */}
-        <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-          {['glucose', 'meal', 'activity'].map(tab => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setLogTab(tab)}
-              className={`flex-1 py-1.5 rounded-lg capitalize transition ${
-                logTab === tab ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-              }`}
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-bold text-slate-500 block mb-1">Reading ({units})</label>
+            <input
+              type="number"
+              value={val}
+              onChange={(e) => setVal(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xl font-black text-blue-600"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 block mb-1">Measurement Context</label>
+            <select
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-800 dark:text-slate-200"
             >
-              {tab}
-            </button>
-          ))}
+              <option>Fasting / Waking</option>
+              <option>Before Breakfast</option>
+              <option>After Breakfast (2h)</option>
+              <option>Before Lunch</option>
+              <option>After Lunch</option>
+              <option>Before Dinner</option>
+              <option>After Dinner</option>
+              <option>Bedtime</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-500 block mb-1">Notes / Tags</label>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. 15-min walk, light salad"
+              className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-800 dark:text-slate-200"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onAddGlucose(val, context, notes ? [notes] : [], notes)}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-500/20"
+          >
+            Save Reading Entry
+          </button>
         </div>
-
-        {logTab === 'glucose' && (
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Reading ({units})</label>
-              <input
-                type="number"
-                value={glucoseVal}
-                onChange={(e) => setGlucoseVal(e.target.value)}
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold text-slate-900"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Context</label>
-              <select
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
-              >
-                <option>Fasting / Waking</option>
-                <option>Before Breakfast</option>
-                <option>After Breakfast (2h)</option>
-                <option>Before Lunch</option>
-                <option>After Lunch</option>
-                <option>Before Dinner</option>
-                <option>After Dinner</option>
-                <option>Bedtime</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Notes & Tags</label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. 15-min walk, light meal"
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onAddGlucose(glucoseVal, context, notes ? [notes] : [], notes)}
-              className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs"
-            >
-              Save Glucose Entry
-            </button>
-          </div>
-        )}
-
-        {logTab === 'meal' && (
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Meal Type</label>
-              <select
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-              >
-                <option>Breakfast</option>
-                <option>Lunch</option>
-                <option>Dinner</option>
-                <option>Snack</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">What did you eat?</label>
-              <input
-                type="text"
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
-                placeholder="e.g. 1 Roti, Daal & Cucumber Salad"
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (!mealName.trim()) return;
-                onAddMeal({
-                  id: 'f_' + Date.now(),
-                  mealType: mealType,
-                  name: mealName,
-                  carbs: 'Balanced',
-                  plateBalanced: true,
-                  time: 'Just now'
-                });
-              }}
-              className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold"
-            >
-              Save Meal
-            </button>
-          </div>
-        )}
-
-        {logTab === 'activity' && (
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Activity Type</label>
-              <select
-                value={actType}
-                onChange={(e) => setActType(e.target.value)}
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-              >
-                <option>Post-Meal Walking</option>
-                <option>Gentle Mobility / Stretching</option>
-                <option>Cycling / Stationary Bike</option>
-                <option>Resistance / Light Strength</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">Duration (Minutes)</label>
-              <input
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="mt-1 w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                onAddActivity({
-                  id: 'a_' + Date.now(),
-                  type: actType,
-                  duration: Number(duration) || 15,
-                  intensity: 'Moderate',
-                  preGlucose: null,
-                  postGlucose: null,
-                  notes: 'Recorded in quick log'
-                });
-              }}
-              className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold"
-            >
-              Save Activity
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
 }
 
-function ClinicalReportModal({ userProfile, glucoseLogs, tirStats, medications, vitals, onClose }) {
+function ClinicalReportModal({ userProfile, glucoseLogs, medications, vitals, isDarkMode, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-sm w-full p-5 max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
-        <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+      <div className={`rounded-3xl max-w-sm w-full p-5 max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl border ${
+        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+      }`}>
+        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Doctor Visit Summary</h2>
-            <span className="text-[10px] text-slate-500">Prepared for {userProfile.doctor.name}</span>
+            <h3 className="text-sm font-black">Doctor Visit Summary</h3>
+            <span className="text-[10px] text-slate-400">Prepared for {userProfile.doctor.name}</span>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700">
+          <button type="button" onClick={onClose} className="p-1 text-slate-400">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="text-xs space-y-3 text-slate-700">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-            <div className="font-bold text-slate-900">Patient Overview</div>
+        <div className="text-xs space-y-2.5 text-slate-600 dark:text-slate-300">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-white">Patient Information</div>
             <div>Name: {userProfile.name} • Diagnosis: {userProfile.diabetesType}</div>
-            <div>Latest A1C: {vitals.a1c} ({vitals.a1cDate})</div>
-            <div>Current BP: {vitals.bpSystolic}/{vitals.bpDiastolic} mmHg</div>
+            <div>Latest A1C: {vitals.a1c} • BP: {vitals.bpSystolic}/{vitals.bpDiastolic} mmHg</div>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-            <div className="font-bold text-slate-900">Glucose Metric Summary (7-Day)</div>
-            <div>Time-In-Range (70-140): <span className="font-bold text-teal-700">{tirStats.inRange}%</span></div>
-            <div>Time-Below-Range (&lt;70): <span className="font-bold text-amber-700">{tirStats.low}%</span></div>
-            <div>Mean Glucose: {tirStats.avg} {userProfile.units}</div>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-            <div className="font-bold text-slate-900">Current Prescribed Regimen</div>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="font-bold text-slate-900 dark:text-white">Current Regimen</div>
             {medications.map(m => (
               <div key={m.id} className="text-[11px]">• {m.name} {m.dose} ({m.timing})</div>
             ))}
           </div>
 
-          <div className="p-3 bg-teal-50 rounded-xl border border-teal-200 space-y-1 text-[11px] text-teal-900">
-            <div className="font-bold">Prepared Discussion Questions:</div>
-            <div>1. Are my post-dinner glucose readings within our preferred range?</div>
-            <div>2. Should we schedule the annual comprehensive dilated eye exam?</div>
-            <div>3. Does my current physical activity program align with my cardiorenal plan?</div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl border border-blue-100 dark:border-blue-800 space-y-1 text-blue-900 dark:text-blue-200">
+            <div className="font-bold">Suggested Discussion Questions:</div>
+            <div>1. Are my post-dinner readings within target?</div>
+            <div>2. Time for annual dilated retinal exam?</div>
+            <div>3. Review of kidney eGFR/uACR screening.</div>
           </div>
         </div>
 
         <div className="pt-2 flex gap-2">
           <button
             type="button"
-            onClick={() => {
-              window.print();
-            }}
-            className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
+            onClick={() => window.print()}
+            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Export PDF / Print
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-4 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+            className="py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-300"
           >
             Done
           </button>
@@ -2096,70 +2056,100 @@ function ClinicalReportModal({ userProfile, glucoseLogs, tirStats, medications, 
   );
 }
 
-function SettingsScreen({ userProfile, onUpdateProfile, onBack, onResetOnboarding }) {
+function ProfileModal({ userProfile, setUserProfile, vitals, isDarkMode, onClose, onLogoutClick }) {
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={onBack} className="p-1 text-slate-500 hover:text-slate-800">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-base font-extrabold text-slate-900">Account & Profile Settings</h1>
-      </div>
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className={`rounded-3xl max-w-sm w-full p-5 max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl border ${
+        isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+      }`}>
+        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
+          <h3 className="text-sm font-black">My Profile & Settings</h3>
+          <button type="button" onClick={onClose} className="p-1 text-slate-400">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-        <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Clinical Preferences</h2>
-        
-        <div>
-          <label className="text-xs text-slate-600 block mb-1">Display Unit</label>
-          <div className="grid grid-cols-2 gap-2">
-            {['mg/dL', 'mmol/L'].map(u => (
-              <button
-                key={u}
-                type="button"
-                onClick={() => onUpdateProfile({ ...userProfile, units: u })}
-                className={`py-2 rounded-xl text-xs font-bold border ${
-                  userProfile.units === u ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-50 text-slate-700 border-slate-200'
-                }`}
-              >
-                {u}
-              </button>
-            ))}
+        {/* Profile Card */}
+        <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shadow-sm">
+            {userProfile.name.split(' ').map(n => n[0]).join('')}
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-white">{userProfile.name}</h4>
+            <div className="text-xs text-slate-400">{userProfile.email}</div>
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide block mt-0.5">
+              {userProfile.diabetesType} • {userProfile.units}
+            </span>
           </div>
         </div>
 
-        <div>
-          <label className="text-xs text-slate-600 block mb-1">Assigned Healthcare Team</label>
-          <input
-            type="text"
-            value={userProfile.doctor.name}
-            onChange={(e) => onUpdateProfile({ ...userProfile, doctor: { ...userProfile.doctor, name: e.target.value } })}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-          />
+        {/* Vitals Overview Chips (CareSync Style) */}
+        <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 block font-semibold">Blood</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">{userProfile.bloodGroup}</span>
+          </div>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 block font-semibold">Weight</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">{userProfile.weight}</span>
+          </div>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 block font-semibold">Height</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">{userProfile.height}</span>
+          </div>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700">
+            <span className="text-[9px] text-slate-400 block font-semibold">Pulse</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">{vitals.heartRate} bpm</span>
+          </div>
         </div>
 
-        <div>
-          <label className="text-xs text-slate-600 block mb-1">Emergency Contact</label>
-          <input
-            type="text"
-            value={userProfile.emergencyContact.name + ' (' + userProfile.emergencyContact.phone + ')'}
-            readOnly
-            className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600"
-          />
-        </div>
-      </div>
+        {/* Profile Settings Options List (CareSync Style) */}
+        <div className="space-y-1.5 pt-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Stethoscope className="w-4 h-4 text-blue-600" />
+              <span>Assigned Doctor</span>
+            </div>
+            <span className="text-slate-400 text-[11px]">{userProfile.doctor.name}</span>
+          </div>
 
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-3">
-        <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Medical Ethics & Safety</h2>
-        <p className="text-xs text-slate-600 leading-relaxed">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Phone className="w-4 h-4 text-emerald-600" />
+              <span>Emergency Contact</span>
+            </div>
+            <span className="text-slate-400 text-[11px]">{userProfile.emergencyContact.name}</span>
+          </div>
+
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Activity className="w-4 h-4 text-indigo-600" />
+              <span>Glucose Unit System</span>
+            </div>
+            <span className="text-blue-600 font-bold">{userProfile.units}</span>
+          </div>
+
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Shield className="w-4 h-4 text-slate-400" />
+              <span>App Version</span>
+            </div>
+            <span className="text-slate-400 text-[11px]">v2.5.0 (CareSync Pro)</span>
+          </div>
+        </div>
+
+        {/* Medical Disclaimer */}
+        <p className="text-[10px] text-slate-400 leading-relaxed px-1">
           {MEDICAL_DISCLAIMER_TEXT}
         </p>
 
+        {/* Logout button */}
         <button
           type="button"
-          onClick={onResetOnboarding}
-          className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+          onClick={onLogoutClick}
+          className="w-full py-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition"
         >
-          Re-run Onboarding Survey
+          <LogOut className="w-4 h-4" /> Log Out
         </button>
       </div>
     </div>
